@@ -8,7 +8,15 @@ import pandas as pd
 
 from activitysim.abm.models.util import estimation
 from activitysim.abm.models.util.trip import cleanup_failed_trips, failed_trip_cohorts
-from activitysim.core import chunk, config, inject, logit, pipeline, tracing
+from activitysim.core import (
+    chunk,
+    config,
+    inject,
+    logit,
+    pipeline,
+    tracing,
+    expressions,
+)
 from activitysim.core.util import reindex
 
 from .util import probabilistic_scheduling as ps
@@ -180,6 +188,7 @@ def schedule_trips_in_leg(
     failfix = model_settings.get(FAILFIX, FAILFIX_DEFAULT)
     depart_alt_base = model_settings.get("DEPART_ALT_BASE", 0)
     scheduling_mode = model_settings.get("scheduling_mode", "departure")
+    preprocessor_settings = model_settings.get("preprocessor", None)
 
     if scheduling_mode == "departure":
         probs_join_cols = model_settings.get(
@@ -231,6 +240,10 @@ def schedule_trips_in_leg(
         ADJUST_NEXT_DEPART_COL = "latest"
     trips.next_trip_id = trips.next_trip_id.where(~is_final, NO_TRIP_ID)
 
+    network_los = inject.get_injectable("network_los")
+    locals_dict = {"network_los": network_los}
+    locals_dict.update(config.get_model_constants(model_settings))
+
     first_trip_in_leg = True
     for i in range(trips.trip_num.min(), trips.trip_num.max() + 1):
 
@@ -242,6 +255,15 @@ def schedule_trips_in_leg(
             nth_trips = trips[trips.trip_num == trips.trip_count - i]
 
         nth_trace_label = tracing.extend_trace_label(trace_label, "num_%s" % i)
+
+        # - annotate nth_trips
+        if preprocessor_settings:
+            expressions.assign_columns(
+                df=nth_trips,
+                model_settings=preprocessor_settings,
+                locals_dict=locals_dict,
+                trace_label=nth_trace_label,
+            )
 
         choices = ps.make_scheduling_choices(
             nth_trips,
