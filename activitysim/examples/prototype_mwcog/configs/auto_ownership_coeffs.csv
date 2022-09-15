@@ -1,4 +1,5 @@
 coefficient_name,value,constrain
+coef_unavail,-999,T
 coef_cars1_drivers_2,0,T
 coef_cars1_drivers_3,0,T
 coef_cars1_persons_16_17,0,T
@@ -66,3 +67,5 @@ coef_cars3_drivers_3,4.277120564,F
 coef_cars2_drivers_4_up,1.518205653,F
 coef_cars3_drivers_4_up,3.49162912,F
 coef_cars4_drivers_4_up,4.509213244,F
+coef_cars2_av_ownership,-0.22314,F
+coef_cars3_av_ownership,-0.69315,F
