@@ -13,7 +13,7 @@ logger = logging.getLogger("activitysim")
 @inject.step()
 def av_ownership(households_merged, households, chunk_size, trace_hh_id):
     """
-    This model predicts whether a household owns an autonomous vehicle. 
+    This model predicts whether a household owns an autonomous vehicle.
     The output from this model is TRUE or FALSE.
     """
 
@@ -60,9 +60,7 @@ def av_ownership(households_merged, households, chunk_size, trace_hh_id):
     iterations_coefficient_constant = model_settings.get(
         "AV_OWNERSHIP_COEFFICIENT_CONSTANT", None
     )
-    iterations_target_percent = model_settings.get(
-        "AV_OWNERSHIP_TARGET_PERCENT", None
-    )
+    iterations_target_percent = model_settings.get("AV_OWNERSHIP_TARGET_PERCENT", None)
     iterations_target_percent_tolerance = model_settings.get(
         "AV_OWNERSHIP_TARGET_PERCENT_TOLERANCE", 0.01
     )
@@ -94,9 +92,7 @@ def av_ownership(households_merged, households, chunk_size, trace_hh_id):
         if iterations_target_percent is not None:
             # choices_for_filter = choices[choosers[iterations_chooser_filter]]
 
-            current_percent = (choices == av_ownership_alt).sum() / len(
-                choosers
-            )
+            current_percent = (choices == av_ownership_alt).sum() / len(choosers)
             logger.info(
                 "Running %s iteration %i choosers %i current percent %f target percent %f",
                 trace_label,
@@ -144,7 +140,9 @@ def av_ownership(households_merged, households, chunk_size, trace_hh_id):
         estimator.end_estimation()
 
     households = households.to_frame()
-    households["av_ownership"] = choices.reindex(households.index).fillna(0).astype(bool)
+    households["av_ownership"] = (
+        choices.reindex(households.index).fillna(0).astype(bool)
+    )
 
     pipeline.replace_table("households", households)
 
