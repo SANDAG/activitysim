@@ -87,6 +87,7 @@ models:
   - work_from_home
   - transit_pass_subsidy
   - transit_pass_ownership
+  - av_ownership
   - auto_ownership_simulate
   - vehicle_type_choice
   - free_parking
