@@ -7,7 +7,6 @@ from . import (
     atwork_subtour_mode_choice,
     atwork_subtour_scheduling,
     auto_ownership,
-    av_ownership,
     cdap,
     free_parking,
     initialize,
