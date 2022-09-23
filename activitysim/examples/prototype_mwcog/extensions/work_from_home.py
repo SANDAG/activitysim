@@ -93,7 +93,7 @@ def work_from_home(persons_merged, persons, chunk_size, trace_hh_id):
     persons = persons.to_frame()
     persons["work_from_home"] = choices.reindex(persons.index).fillna(0).astype(bool)
     persons[dest_choice_column_name] = np.where(
-        persons.work_from_home is True, -1, persons[dest_choice_column_name]
+        persons.work_from_home == True, -1, persons[dest_choice_column_name]
     )
 
     pipeline.replace_table("persons", persons)
