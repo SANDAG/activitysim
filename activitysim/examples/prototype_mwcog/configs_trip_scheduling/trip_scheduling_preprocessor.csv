@@ -1,4 +1,4 @@
 Description,Target,Expression
 ,periods_left,(df.latest - df.earliest)
 ,periods_left_min,periods_left.clip(upper=21)
-,periods_left_max,"np.where(periods_left > 21, 47, periods_left)"
+,periods_left_max,"np.where(periods_left > 20, 47, periods_left)"

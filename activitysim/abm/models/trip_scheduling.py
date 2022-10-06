@@ -467,6 +467,7 @@ def trip_scheduling(trips, tours, chunk_size, trace_hh_id):
         estimator.write_choosers(trips_df[chooser_cols_for_estimation])
 
     probs_spec_file = model_settings.get("PROBS_SPEC", "trip_scheduling_probs.csv")
+    logger.debug(f"probs_spec_file: {config.config_file_path(probs_spec_file)}")
     probs_spec = pd.read_csv(config.config_file_path(probs_spec_file), comment="#")
     # FIXME for now, not really doing estimation for probabilistic model - just overwriting choices
     # besides, it isn't clear that named coefficients would be helpful if we had some form of estimation
