@@ -172,10 +172,15 @@ def _preprocess_scheduling_probs(
         )
     elif scheduling_mode == "stop_duration":
         chooser_probs = _preprocess_stop_duration_probs(choosers)
+    elif scheduling_mode == "relative":
+        # creating a dataframe with just the trip_id as index and alternatives as columns
+        probs_cols = [c for c in probs_spec.columns if c not in probs_join_cols]
+        chooser_probs = choosers.loc[:, probs_cols]
+        chooser_probs = chooser_probs.div(chooser_probs.sum(axis=1), axis=0).fillna(0)
     else:
         logger.error(
             "Invalid scheduling mode specified: {0}.".format(scheduling_mode),
-            "Please select one of ['departure', 'stop_duration'] and try again.",
+            "Please select one of ['departure', 'stop_duration', 'relative'] and try again.",
         )
 
     # probs should sum to 1 with residual probs resulting in choice of 'fail'
@@ -334,7 +339,11 @@ def make_scheduling_choices(
     if failed.any():
         choices = choices[~failed]
 
-    if all([check_col in choosers_df.columns for check_col in ["earliest", "latest"]]):
+    if all(
+        [check_col in choosers_df.columns for check_col in ["earliest", "latest"]]
+    ) & (scheduling_mode != "relative"):
+        # check to make sure choice does not come before previously scheduled trip or after end of tour
+        # does not apply if choices are relative to previous trip depart
         assert (choices >= choosers_df.earliest[~failed]).all()
         assert (choices <= choosers_df.latest[~failed]).all()
 

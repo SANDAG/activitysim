@@ -43,6 +43,7 @@ FAILFIX_DEFAULT = FAILFIX_CHOOSE_MOST_INITIAL
 
 DEPARTURE_MODE = "departure"
 DURATION_MODE = "stop_duration"
+RELATIVE_MODE = "relative"
 PROBS_JOIN_COLUMNS_DEPARTURE_BASED = [
     "primary_purpose",
     "outbound",
@@ -50,6 +51,7 @@ PROBS_JOIN_COLUMNS_DEPARTURE_BASED = [
     "trip_num",
 ]
 PROBS_JOIN_COLUMNS_DURATION_BASED = ["outbound", "stop_num"]
+PROBS_JOIN_COLUMNS_RELATIVE_BASED = ["outbound", "periods_left"]
 
 
 def set_tour_hour(trips, tours):
@@ -198,10 +200,14 @@ def schedule_trips_in_leg(
         probs_join_cols = model_settings.get(
             "probs_join_cols", PROBS_JOIN_COLUMNS_DURATION_BASED
         )
+    elif scheduling_mode == "relative":
+        probs_join_cols = model_settings.get(
+            "probs_join_cols", PROBS_JOIN_COLUMNS_RELATIVE_BASED
+        )
     else:
         logger.error(
             "Invalid scheduling mode specified: {0}.".format(scheduling_mode),
-            "Please select one of ['departure', 'stop_duration'] and try again.",
+            "Please select one of ['departure', 'stop_duration', 'relative'] and try again.",
         )
 
     # logger.debug("%s scheduling %s trips" % (trace_label, trips.shape[0]))
@@ -247,23 +253,27 @@ def schedule_trips_in_leg(
     first_trip_in_leg = True
     for i in range(trips.trip_num.min(), trips.trip_num.max() + 1):
 
-        if outbound or scheduling_mode == DURATION_MODE:
+        nth_trace_label = tracing.extend_trace_label(trace_label, "num_%s" % i)
+
+        # - annotate trips
+        if preprocessor_settings:
+            expressions.assign_columns(
+                df=trips,
+                model_settings=preprocessor_settings,
+                locals_dict=locals_dict,
+                trace_label=nth_trace_label,
+            )
+
+        if (
+            outbound
+            or (scheduling_mode == DURATION_MODE)
+            or (scheduling_mode == RELATIVE_MODE)
+        ):
             # iterate in ascending trip_num order
             nth_trips = trips[trips.trip_num == i]
         else:
             # iterate over inbound trips in descending trip_num order, skipping the final trip
             nth_trips = trips[trips.trip_num == trips.trip_count - i]
-
-        nth_trace_label = tracing.extend_trace_label(trace_label, "num_%s" % i)
-
-        # - annotate nth_trips
-        if preprocessor_settings:
-            expressions.assign_columns(
-                df=nth_trips,
-                model_settings=preprocessor_settings,
-                locals_dict=locals_dict,
-                trace_label=nth_trace_label,
-            )
 
         choices = ps.make_scheduling_choices(
             nth_trips,
@@ -285,6 +295,12 @@ def schedule_trips_in_leg(
                 % (nth_trace_label, choices.isna().sum())
             )
             choices = choices.fillna(trips[ADJUST_NEXT_DEPART_COL])
+
+        if scheduling_mode == RELATIVE_MODE:
+            # choices are relative to the previous departure time
+            choices = nth_trips.earliest + choices
+            # need to update the departure time based on the choice
+            update_tour_earliest(trips, choices)
 
         # adjust allowed depart range of next trip
         has_next_trip = nth_trips.next_trip_id != NO_TRIP_ID
@@ -450,9 +466,8 @@ def trip_scheduling(trips, tours, chunk_size, trace_hh_id):
         ]
         estimator.write_choosers(trips_df[chooser_cols_for_estimation])
 
-    probs_spec = pd.read_csv(
-        config.config_file_path("trip_scheduling_probs.csv"), comment="#"
-    )
+    probs_spec_file = model_settings.get("PROBS_SPEC", "trip_scheduling_probs.csv")
+    probs_spec = pd.read_csv(config.config_file_path(probs_spec_file), comment="#")
     # FIXME for now, not really doing estimation for probabilistic model - just overwriting choices
     # besides, it isn't clear that named coefficients would be helpful if we had some form of estimation
     # coefficients_df = simulate.read_model_coefficients(model_settings)
