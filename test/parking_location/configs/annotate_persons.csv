@@ -5,8 +5,6 @@ age_16_p,age_16_p,persons.age >= 16
 adult,adult,persons.age >= 18
 male,male,persons.sex == 1
 female,female,persons.sex == 2
-is_university,is_university,type == 'University student'
-home_zone_id,home_zone_id,"reindex(households.home_zone_id, persons.household_id)"
 ,ptype,0
 ,ptype,"np.where(persons.type == 'Full-time worker', 1, ptype)"
 ,ptype,"np.where(persons.type == 'Part-time worker', 2, ptype)"
@@ -16,10 +14,3 @@ home_zone_id,home_zone_id,"reindex(households.home_zone_id, persons.household_id
 ,ptype,"np.where(persons.type == 'Student of driving age', 6, ptype)"
 ,ptype,"np.where(persons.type == 'Student of non-driving age', 7, ptype)"
 ,ptype,"np.where(persons.type == 'Child too young for school', 8, ptype)"
-,_auto_time_home_to_work,"skim_dict.lookup(home_zone_id, WorkLocation, ('SOV_TIME', 'MD'))"
-,_auto_time_work_to_home,"skim_dict.lookup(WorkLocation, home_zone_id, ('SOV_TIME', 'MD')"
-,roundtrip_auto_time_to_work,"np.where(WorkLocation>=0,_auto_time_home_to_work + _auto_time_wo_home,0)"
-,_auto_time_home_to_school,"skim_dict.lookup(home_zone_id, SchoolLocation, ('SOV_TIME', 'MD'))"
-,_auto_time_school_to_home,"skim_dict.lookup(SchoolLocation, home_zone_id, ('SOV_TIME', 'MD'))"
-,roundtrip_auto_time_to_school,"np.where(SchoolLocation>=0,_auto_time_home_to_school + _auto_time_school_to_home,0)"
-,distance_to_school,"np.where(SchoolLocation>=0,skim_dict.lookup(home_zone_id, SchoolLocation, ('SOV_TIME', 'MD')),np.nan)"
