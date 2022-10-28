@@ -179,6 +179,10 @@ checkpoints: True
 
 
 models:
+  ## Disaggregate Accessibility steps
+  - initialize_proto_population # Separate step so proto tables can be split for multiprocess.
+  - compute_disaggregate_accessibility
+  ## Main model steps
   - initialize_landuse
   - initialize_households
   - compute_accessibility
@@ -223,6 +227,7 @@ output_tables:
   tables:
     - checkpoints
     - accessibility
+    - proto_disaggregate_accessibility
     - land_use
     - households
     - persons
