@@ -1,7 +1,9 @@
 # ActivitySim
 # See full license in LICENSE.txt.
+
 from . import (
     accessibility,
+    disaggregate_accessibility,
     atwork_subtour_destination,
     atwork_subtour_frequency,
     atwork_subtour_mode_choice,
@@ -24,6 +26,7 @@ from . import (
     non_mandatory_scheduling,
     non_mandatory_tour_frequency,
     parking_location_choice,
+    school_escorting,
     stop_frequency,
     summarize,
     tour_mode_choice,
