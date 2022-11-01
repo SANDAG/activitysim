@@ -89,3 +89,8 @@ def test_mtc_extended():
 
 def test_mtc_extended_mp():
     run_test_mtc_extended(multiprocess=True)
+
+
+if __name__ == "__main__":
+    run_test_mtc_extended(multiprocess=False)
+    run_test_mtc_extended(multiprocess=True)
