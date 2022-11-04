@@ -140,8 +140,6 @@ class ShadowPriceCalculator(object):
                     "shadow_settings %s: %s" % (k, self.shadow_settings.get(k))
                 )
 
-        # if self.model_selector not in ["workplace", "school"]:
-        #     self.use_shadow_pricing = False
         if (
             self.model_selector not in ["workplace", "school"]
             and self.shadow_settings["SHADOW_PRICE_METHOD"] == "simulation"
