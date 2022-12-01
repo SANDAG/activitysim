@@ -8,17 +8,10 @@ import pandas as pd
 
 from activitysim.abm.models.util import estimation
 from activitysim.abm.models.util.trip import cleanup_failed_trips, failed_trip_cohorts
-from activitysim.core import (
-    chunk,
-    config,
-    inject,
-    logit,
-    pipeline,
-    tracing,
-    expressions,
-)
+from activitysim.core import chunk, config, inject, logit, pipeline, tracing
 from activitysim.core.util import reindex
 
+from .util.school_escort_tours_trips import split_out_school_escorting_trips
 from .util import probabilistic_scheduling as ps
 
 logger = logging.getLogger(__name__)
@@ -43,7 +36,6 @@ FAILFIX_DEFAULT = FAILFIX_CHOOSE_MOST_INITIAL
 
 DEPARTURE_MODE = "departure"
 DURATION_MODE = "stop_duration"
-RELATIVE_MODE = "relative"
 PROBS_JOIN_COLUMNS_DEPARTURE_BASED = [
     "primary_purpose",
     "outbound",
@@ -51,7 +43,6 @@ PROBS_JOIN_COLUMNS_DEPARTURE_BASED = [
     "trip_num",
 ]
 PROBS_JOIN_COLUMNS_DURATION_BASED = ["outbound", "stop_num"]
-PROBS_JOIN_COLUMNS_RELATIVE_BASED = ["outbound", "periods_left"]
 
 
 def set_tour_hour(trips, tours):
@@ -190,7 +181,6 @@ def schedule_trips_in_leg(
     failfix = model_settings.get(FAILFIX, FAILFIX_DEFAULT)
     depart_alt_base = model_settings.get("DEPART_ALT_BASE", 0)
     scheduling_mode = model_settings.get("scheduling_mode", "departure")
-    preprocessor_settings = model_settings.get("preprocessor", None)
 
     if scheduling_mode == "departure":
         probs_join_cols = model_settings.get(
@@ -200,14 +190,10 @@ def schedule_trips_in_leg(
         probs_join_cols = model_settings.get(
             "probs_join_cols", PROBS_JOIN_COLUMNS_DURATION_BASED
         )
-    elif scheduling_mode == "relative":
-        probs_join_cols = model_settings.get(
-            "probs_join_cols", PROBS_JOIN_COLUMNS_RELATIVE_BASED
-        )
     else:
         logger.error(
             "Invalid scheduling mode specified: {0}.".format(scheduling_mode),
-            "Please select one of ['departure', 'stop_duration', 'relative'] and try again.",
+            "Please select one of ['departure', 'stop_duration'] and try again.",
         )
 
     # logger.debug("%s scheduling %s trips" % (trace_label, trips.shape[0]))
@@ -274,6 +260,8 @@ def schedule_trips_in_leg(
         else:
             # iterate over inbound trips in descending trip_num order, skipping the final trip
             nth_trips = trips[trips.trip_num == trips.trip_count - i]
+
+        nth_trace_label = tracing.extend_trace_label(trace_label, "num_%s" % i)
 
         choices = ps.make_scheduling_choices(
             nth_trips,
@@ -443,6 +431,14 @@ def trip_scheduling(trips, tours, chunk_size, trace_hh_id):
     trips_df = trips.to_frame()
     tours = tours.to_frame()
 
+    if pipeline.is_table("school_escort_trips"):
+        school_escort_trips = pipeline.get_table("school_escort_trips")
+        # separate out school escorting trips to exclude them from the model and estimation data bundle
+        trips_df, se_trips_df, full_trips_index = split_out_school_escorting_trips(
+            trips_df, school_escort_trips
+        )
+        non_se_trips_df = trips_df
+
     # add columns 'tour_hour', 'earliest', 'latest' to trips
     set_tour_hour(trips_df, tours)
 
@@ -466,9 +462,9 @@ def trip_scheduling(trips, tours, chunk_size, trace_hh_id):
         ]
         estimator.write_choosers(trips_df[chooser_cols_for_estimation])
 
-    probs_spec_file = model_settings.get("PROBS_SPEC", "trip_scheduling_probs.csv")
-    logger.debug(f"probs_spec_file: {config.config_file_path(probs_spec_file)}")
-    probs_spec = pd.read_csv(config.config_file_path(probs_spec_file), comment="#")
+    probs_spec = pd.read_csv(
+        config.config_file_path("trip_scheduling_probs.csv"), comment="#"
+    )
     # FIXME for now, not really doing estimation for probabilistic model - just overwriting choices
     # besides, it isn't clear that named coefficients would be helpful if we had some form of estimation
     # coefficients_df = simulate.read_model_coefficients(model_settings)
@@ -543,6 +539,13 @@ def trip_scheduling(trips, tours, chunk_size, trace_hh_id):
 
     trips_df = trips.to_frame()
 
+    if pipeline.is_table("school_escort_trips"):
+        # separate out school escorting trips to exclude them from the model and estimation data bundle
+        trips_df, se_trips_df, full_trips_index = split_out_school_escorting_trips(
+            trips_df, school_escort_trips
+        )
+        non_se_trips_df = trips_df
+
     choices = pd.concat(choices_list)
     choices = choices.reindex(trips_df.index)
 
@@ -572,6 +575,20 @@ def trip_scheduling(trips, tours, chunk_size, trace_hh_id):
         choices = choices.reindex(trips_df.index)
 
     trips_df["depart"] = choices
+
+    if pipeline.is_table("school_escort_trips"):
+        # setting destination for school escort trips
+        se_trips_df["depart"] = reindex(school_escort_trips.depart, se_trips_df.index)
+        non_se_trips_df["depart"] = reindex(trips_df.depart, non_se_trips_df.index)
+        # merge trips back together
+        full_trips_df = pd.concat([non_se_trips_df, se_trips_df])
+        full_trips_df["depart"] = full_trips_df["depart"].astype(int)
+        # want to preserve the original order, but first need to remove trips that were dropped
+        new_full_trips_index = full_trips_index[
+            full_trips_index.isin(trips_df.index)
+            | full_trips_index.isin(se_trips_df.index)
+        ]
+        trips_df = full_trips_df.reindex(new_full_trips_index)
 
     assert not trips_df.depart.isnull().any()
 
