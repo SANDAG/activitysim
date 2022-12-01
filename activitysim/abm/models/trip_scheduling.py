@@ -528,7 +528,9 @@ def trip_scheduling(trips, tours, chunk_size, trace_hh_id):
                 failed = choices.reindex(trips_chunk.index).isnull()
                 logger.info("%s %s failed", trace_label_i, failed.sum())
 
-                if (failed.sum() > 0) & (model_settings["scheduling_mode"] == 'relative'):
+                if (failed.sum() > 0) & (
+                    model_settings["scheduling_mode"] == "relative"
+                ):
                     raise RuntimeError("failed trips with relative scheduling mode")
 
                 if not is_last_iteration:
