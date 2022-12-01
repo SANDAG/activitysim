@@ -529,7 +529,7 @@ def trip_scheduling(trips, tours, chunk_size, trace_hh_id):
                 logger.info("%s %s failed", trace_label_i, failed.sum())
 
                 if (failed.sum() > 0) & (
-                    model_settings["scheduling_mode"] == "relative"
+                    model_settings.get("scheduling_mode") == "relative"
                 ):
                     raise RuntimeError("failed trips with relative scheduling mode")
 
