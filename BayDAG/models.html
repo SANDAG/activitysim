@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Models &#8212; ActivitySim 0.9.6.dev930+g7c67f35b</title>
+    <title>Models &#8212; ActivitySim 0.9.6.dev996+g9506f166</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -2812,6 +2812,27 @@ the previous trip’s choice (i.e. assumed to happen right after the previous tr
 The trip scheduling model does not use mode choice logsums.</p>
 <p>Alternatives: Available time periods in the tour window (i.e. tour start and end period).  When processing stops on
 work tours, the available time periods is constrained by the at-work subtour start and end period as well.</p>
+<p>In order to avoid trip failing, a new probabalisitic trip scheduling mode was developed named “relative”.
+When setting the _scheduling_mode_ option to relative, trips are scheduled relative to the previously scheduled trips.
+The first trip still departs when the tour starts and for every subsequet trip, the choices are selected with respect to
+the previous trip depart time. Inbound trips are no longer handled in reverse order.  The key to this relative mode is to
+index the probabilities based on how much time is remaining on the tour.  For tours that include subtours, the time remaining will
+be based on the subtour start time for outbound trips and will resume again for inbound trips after the subtour ends.
+By indexing the probabilities based on time remaining and scheduling relative to the previous trip, scheduling trips in relative
+mode will not fail.</p>
+<p>An example of trip scheduling in relative mode is included in the <a class="reference internal" href="examples.html#prototype-mwcog"><span class="std std-ref">prototype_mwcog</span></a> example.  In this example, trip
+scheduling probabilities are indexed by the following columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>periods_left_min: the minimum bin for the number of time periods left on the tour.</p></li>
+<li><p>periods_left_max: the maximum bin for the number of time periods left on the tour.  This is the same as periods_left_min until the final time period bin.</p></li>
+<li><p>outbound: whether the trip occurs on the outbound leg of a tour.</p></li>
+<li><p>tour_purpose_grouped: Tour purpose grouped into mandatory and non-mandatory categories</p></li>
+<li><p>half_tour_stops_remaining_grouped: The number of stops remaining on the half tour with the categories of 0 and 1+</p></li>
+</ul>
+</div></blockquote>
+<p>Each of these variables are listed as merge columns in the trip_scheduling.yaml file and are declared in the trip scheduling preprocessor.
+The variables above attempt to balance the statistics available for probability creation with the amount of segmentation of trip characteristics.</p>
 <p>The main interface to the trip scheduling model is the
 <a class="reference internal" href="#activitysim.abm.models.trip_scheduling.trip_scheduling" title="activitysim.abm.models.trip_scheduling.trip_scheduling"><code class="xref py py-func docutils literal notranslate"><span class="pre">trip_scheduling()</span></code></a> function.
 This function is registered as an Inject step in the example Pipeline.</p>
@@ -3284,8 +3305,47 @@ The pair _hh_id_, cdap_rank will uniquely identify each household member.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="activitysim.abm.models.util.cdap.build_cdap_joint_spec">
+<span class="sig-prename descclassname"><span class="pre">activitysim.abm.models.util.cdap.</span></span><span class="sig-name descname"><span class="pre">build_cdap_joint_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">joint_tour_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hhsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#activitysim.abm.models.util.cdap.build_cdap_joint_spec" title="Permalink to this definition">#</a></dt>
+<dd><p>Build a spec file for computing joint tour utilities of alternative household member for households of specified size.
+We generate this spec automatically from a table of rules and coefficients because the
+interaction rules are fairly simple and can be expressed compactly whereas
+there is a lot of redundancy between the spec files for different household sizes, as well as
+in the vectorized expression of the interaction alternatives within the spec file itself
+joint_tour_coefficients has five columns:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>label</dt><dd><p>label of the expression</p>
+</dd>
+<dt>description</dt><dd><p>description of the expression</p>
+</dd>
+<dt>dependency</dt><dd><p>if the expression is dependent on alternative, and which alternative is it dependent on
+(e.g. M_px, N_px, H_px)</p>
+</dd>
+<dt>expression</dt><dd><p>expression of the utility term</p>
+</dd>
+<dt>coefficient</dt><dd><p>The coefficient to apply for the alternative</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>The generated spec will have the eval expression in the index, and a utility column for each
+alternative (e.g. [‘HH’, ‘HM’, ‘HN’, ‘MH’, ‘MM’, ‘MN’, ‘NH’, ‘NM’, ‘NN’, ‘MMJ’, ‘MNJ’, ‘NMJ’, ‘NNJ’] for hhsize 2 with joint alts)
+Parameters
+———-
+joint_tour_coefficients : pandas.DataFrame</p>
+<blockquote>
+<div><p>Rules and coefficients for generating joint tour specs for different household sizes</p>
+</div></blockquote>
+<dl class="simple">
+<dt>hhsize<span class="classifier">int</span></dt><dd><p>household size for which the spec should be built.</p>
+</dd>
+</dl>
+<p>spec: pandas.DataFrame</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="activitysim.abm.models.util.cdap.build_cdap_spec">
-<span class="sig-prename descclassname"><span class="pre">activitysim.abm.models.util.cdap.</span></span><span class="sig-name descname"><span class="pre">build_cdap_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interaction_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hhsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#activitysim.abm.models.util.cdap.build_cdap_spec" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">activitysim.abm.models.util.cdap.</span></span><span class="sig-name descname"><span class="pre">build_cdap_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interaction_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hhsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_tour_alt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#activitysim.abm.models.util.cdap.build_cdap_spec" title="Permalink to this definition">#</a></dt>
 <dd><p>Build a spec file for computing utilities of alternative household member interaction patterns
 for households of specified size.</p>
 <p>We generate this spec automatically from a table of rules and coefficients because the
@@ -3404,7 +3464,7 @@ for all (non-extra) household members</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="activitysim.abm.models.util.cdap.household_activity_choices">
-<span class="sig-prename descclassname"><span class="pre">activitysim.abm.models.util.cdap.</span></span><span class="sig-name descname"><span class="pre">household_activity_choices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indiv_utils</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interaction_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hhsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_hh_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#activitysim.abm.models.util.cdap.household_activity_choices" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">activitysim.abm.models.util.cdap.</span></span><span class="sig-name descname"><span class="pre">household_activity_choices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indiv_utils</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interaction_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hhsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_hh_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_joint_tour_utility</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#activitysim.abm.models.util.cdap.household_activity_choices" title="Permalink to this definition">#</a></dt>
 <dd><p>Calculate household utilities for each activity pattern alternative for households of hhsize
 The resulting activity pattern for each household will be coded as a string of activity codes.
 e.g. ‘MNHH’ for a 4 person household with activities Mandatory, NonMandatory, Home, Home</p>
@@ -3479,7 +3539,7 @@ this slug is then replaced with the numerical coefficient value prior to evaluat
 
 <dl class="py function">
 <dt class="sig sig-object py" id="activitysim.abm.models.util.cdap.run_cdap">
-<span class="sig-prename descclassname"><span class="pre">activitysim.abm.models.util.cdap.</span></span><span class="sig-name descname"><span class="pre">run_cdap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">persons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">person_type_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdap_indiv_spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdap_interaction_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdap_fixed_relative_proportions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locals_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_hh_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#activitysim.abm.models.util.cdap.run_cdap" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">activitysim.abm.models.util.cdap.</span></span><span class="sig-name descname"><span class="pre">run_cdap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">persons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">person_type_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdap_indiv_spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdap_interaction_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdap_fixed_relative_proportions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locals_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_hh_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_joint_tour_utility</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#activitysim.abm.models.util.cdap.run_cdap" title="Permalink to this definition">#</a></dt>
 <dd><p>Choose individual activity patterns for persons.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters</dt>
@@ -3503,6 +3563,8 @@ in either the cdap_indiv_spec or cdap_fixed_relative_proportions expression file
 <dt><strong>trace_hh_id</strong><span class="classifier">int</span></dt><dd><p>hh_id to trace or None if no hh tracing</p>
 </dd>
 <dt><strong>trace_label</strong><span class="classifier">str</span></dt><dd><p>label for tracing or None if no tracing</p>
+</dd>
+<dt><strong>add_joint_tour_utility</strong><span class="classifier">Bool</span></dt><dd><p>cdap model include joint tour utility or not</p>
 </dd>
 </dl>
 </dd>
@@ -3758,6 +3820,42 @@ annotated with mode_choice logsum to select a destination from sample alternativ
 <section id="module-activitysim.abm.models.util.tour_frequency">
 <span id="tour-frequency"></span><h3>Tour Frequency<a class="headerlink" href="#module-activitysim.abm.models.util.tour_frequency" title="Permalink to this headline">#</a></h3>
 <dl class="py function">
+<dt class="sig sig-object py" id="activitysim.abm.models.util.tour_frequency.create_joint_tours">
+<span class="sig-prename descclassname"><span class="pre">activitysim.abm.models.util.tour_frequency.</span></span><span class="sig-name descname"><span class="pre">create_joint_tours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tour_counts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tour_category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'person_id'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#activitysim.abm.models.util.tour_frequency.create_joint_tours" title="Permalink to this definition">#</a></dt>
+<dd><p>This method processes the tour_frequency column that comes
+out of the model of the same name and turns into a DataFrame that
+represents the tours that were generated</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>tour_counts: DataFrame</strong></dt><dd><p>table specifying how many tours of each type to create
+one row per person (or parent_tour for atwork subtours)
+one (int) column per tour_type, with number of tours to create</p>
+</dd>
+<dt><strong>tour_category</strong><span class="classifier">str</span></dt><dd><p>one of ‘mandatory’, ‘non_mandatory’, ‘atwork’, or ‘joint’</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>tours</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>An example of a tours DataFrame is supplied as a comment in the
+source code - it has an index which is a unique tour identifier,
+a person_id column, and a tour type column which comes from the
+column names of the alternatives DataFrame supplied above.</p>
+<p>tours.tour_type       - tour type (e.g. school, work, shopping, eat)
+tours.composition     - tour composition (e.g. adults, children, mixed)
+tours.tour_type_num   - if there are two ‘school’ type tours, they will be numbered 1 and 2
+tours.tour_type_count - number of tours of tour_type parent has (parent’s max tour_type_num)
+tours.tour_num        - index of tour (of any type) for parent
+tours.tour_count      - number of tours of any type) for parent (parent’s max tour_num)
+tours.tour_category   - one of ‘mandatory’, ‘non_mandatory’, ‘atwork’, or ‘joint’</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="activitysim.abm.models.util.tour_frequency.create_tours">
 <span class="sig-prename descclassname"><span class="pre">activitysim.abm.models.util.tour_frequency.</span></span><span class="sig-name descname"><span class="pre">create_tours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tour_counts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tour_category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'person_id'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#activitysim.abm.models.util.tour_frequency.create_tours" title="Permalink to this definition">#</a></dt>
 <dd><p>This method processes the tour_frequency column that comes
@@ -3845,6 +3943,38 @@ and frequency counts for the tours to be generated for that choice</p>
 <dt><strong>tours</strong><span class="classifier">DataFrame</span></dt><dd><p>An example of a tours DataFrame is supplied as a comment in the
 source code - it has an index which is a tour identifier, a household_id
 column, a tour_type column and tour_type_num and tour_num columns
+which is set to 1 or 2 depending whether it is the first or second joint tour
+made by the household.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="activitysim.abm.models.util.tour_frequency.process_joint_tours_frequency_composition">
+<span class="sig-prename descclassname"><span class="pre">activitysim.abm.models.util.tour_frequency.</span></span><span class="sig-name descname"><span class="pre">process_joint_tours_frequency_composition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">joint_tour_frequency_composition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_tour_frequency_composition_alts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_persons</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#activitysim.abm.models.util.tour_frequency.process_joint_tours_frequency_composition" title="Permalink to this definition">#</a></dt>
+<dd><p>This method processes the joint_tour_frequency_composition column that comes out of
+the model of the same name and turns into a DataFrame that represents the
+joint tours that were generated</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>joint_tour_frequency_composition</strong><span class="classifier">pandas.Series</span></dt><dd><p>household joint_tour_frequency_composition (which came out of the joint tour frequency composition model)
+indexed by household_id</p>
+</dd>
+<dt><strong>joint_tour_frequency_composition_alts: DataFrame</strong></dt><dd><p>A DataFrame which has as a unique index with joint_tour_frequency_composition values
+and frequency counts for the tours to be generated for that choice</p>
+</dd>
+<dt><strong>point_persons</strong><span class="classifier">pandas DataFrame</span></dt><dd><p>table with columns for (at least) person_ids and home_zone_id indexed by household_id</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>tours</strong><span class="classifier">DataFrame</span></dt><dd><p>An example of a tours DataFrame is supplied as a comment in the
+source code - it has an index which is a tour identifier, a household_id
+column, a tour_type column, composition column and tour_type_num and tour_num columns
 which is set to 1 or 2 depending whether it is the first or second joint tour
 made by the household.</p>
 </dd>
@@ -3951,6 +4081,51 @@ source code - it has an index which is a unique tour identifier,
 a person_id column, and a tour type column which comes from the
 column names of the alternatives DataFrame supplied above.</p>
 <p>tours.tour_type       - tour type (e.g. school, work, shopping, eat)
+tours.tour_type_num   - if there are two ‘school’ type tours, they will be numbered 1 and 2
+tours.tour_type_count - number of tours of tour_type parent has (parent’s max tour_type_num)
+tours.tour_num        - index of tour (of any type) for parent
+tours.tour_count      - number of tours of any type) for parent (parent’s max tour_num)
+tours.tour_category   - one of ‘mandatory’, ‘non_mandatory’, ‘atwork’, or ‘joint’</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="activitysim.abm.models.util.tour_frequency.process_tours_frequency_composition">
+<span class="sig-prename descclassname"><span class="pre">activitysim.abm.models.util.tour_frequency.</span></span><span class="sig-name descname"><span class="pre">process_tours_frequency_composition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">joint_tour_frequency_composition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_tour_frequency_composition_alts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tour_category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'person_id'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#activitysim.abm.models.util.tour_frequency.process_tours_frequency_composition" title="Permalink to this definition">#</a></dt>
+<dd><p>This method processes the joint_tour_frequency_composition column that comes
+out of the model of the same name and turns into a DataFrame that
+represents the tours that were generated</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>joint_tour_frequency_composition: Series</strong></dt><dd><p>A series which has &lt;parent_col&gt; as the index and the chosen alternative
+index as the value</p>
+</dd>
+<dt><strong>joint_tour_frequency_composition_alts: DataFrame</strong></dt><dd><p>A DataFrame which has as a unique index which relates to the values
+in the series above typically includes columns which are named for trip
+purposes with values which are counts for that trip purpose, and tour composition.  Example
+trip purposes include escort, shopping, othmaint, othdiscr, eatout,
+social, etc. Tour composition includes adults, children, and mixed.
+A row would be an alternative which might be to take
+one shopping trip in a adult-only tour and zero trips of other purposes, etc.</p>
+</dd>
+<dt><strong>tour_category</strong><span class="classifier">str</span></dt><dd><p>one of ‘mandatory’, ‘non_mandatory’, ‘atwork’, or ‘joint’</p>
+</dd>
+<dt><strong>parent_col: str</strong></dt><dd><p>the name of the index (parent_tour_id for atwork subtours, otherwise person_id)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>tours</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>An example of a tours DataFrame is supplied as a comment in the
+source code - it has an index which is a unique tour identifier,
+a person_id column, and a tour type column which comes from the
+column names of the alternatives DataFrame supplied above.</p>
+<p>tours.tour_type       - tour type (e.g. school, work, shopping, eat)
+tours.composition     - tour composition (e.g. adults, children, mixed)
 tours.tour_type_num   - if there are two ‘school’ type tours, they will be numbered 1 and 2
 tours.tour_type_count - number of tours of tour_type parent has (parent’s max tour_type_num)
 tours.tour_num        - index of tour (of any type) for parent
@@ -4291,7 +4466,7 @@ DataFrame and the values are the index of the alts DataFrame.</p>
     <div class="footer-item">
       <!-- This will display the version of the docs -->
 <p class="last-updated">
-ActivitySim 0.9.6.dev930+g7c67f35b, documentation last updated Nov 07, 2022.<br/>
+ActivitySim 0.9.6.dev996+g9506f166, documentation last updated Dec 21, 2022.<br/>
 </p>
     </div>
     
