@@ -1,6 +1,10 @@
 
 SPEC: tour_scheduling_nonmandatory.csv
+<<<<<<< HEAD:activitysim/examples/prototype_mtc_extended/configs/non_mandatory_tour_scheduling.yaml
 COEFFICIENTS: tour_scheduling_nonmandatory_coefficients.csv
+=======
+COEFFICIENTS: tour_scheduling_nonmandatory_coeffs.csv
+>>>>>>> BayDAG:activitysim/examples/placeholder_psrc/configs/non_mandatory_tour_scheduling.yaml
 
 LOGIT_TYPE: MNL
 
@@ -10,7 +14,10 @@ preprocessor:
   TABLES:
     - land_use
     - joint_tour_participants
+<<<<<<< HEAD:activitysim/examples/prototype_mtc_extended/configs/non_mandatory_tour_scheduling.yaml
     - school_escort_tours
+=======
+>>>>>>> BayDAG:activitysim/examples/placeholder_psrc/configs/non_mandatory_tour_scheduling.yaml
 
 SIMULATE_CHOOSER_COLUMNS:
   - ptype

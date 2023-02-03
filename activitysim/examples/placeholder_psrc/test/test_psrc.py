@@ -2,7 +2,6 @@
 # See full license in LICENSE.txt.
 import os
 import subprocess
-import sys
 
 import pandas as pd
 import pandas.testing as pdt
@@ -16,7 +15,7 @@ def teardown_function(func):
     inject.reinject_decorated_tables()
 
 
-def _test_psrc(sharrow=False):
+def test_psrc():
     def example_path(dirname):
         resource = os.path.join("examples", "placeholder_psrc", dirname)
         return pkg_resources.resource_filename("activitysim", resource)
@@ -35,36 +34,25 @@ def _test_psrc(sharrow=False):
 
     file_path = os.path.join(os.path.dirname(__file__), "simulation.py")
 
-    if sharrow:
-        run_args = ["-c", test_path("configs_sharrow")]
-    else:
-        run_args = []
-
-    run_args += [
-        "-c",
-        test_path("configs"),
-        "-c",
-        example_path("configs"),
-        "-d",
-        example_path("data"),
-        "-o",
-        test_path("output"),
-    ]
-
-    if os.environ.get("GITHUB_ACTIONS") == "true":
-        subprocess.run(["coverage", "run", "-a", file_path] + run_args, check=True)
-    else:
-        subprocess.run([sys.executable, file_path] + run_args, check=True)
+    subprocess.run(
+        [
+            "coverage",
+            "run",
+            "-a",
+            file_path,
+            "-c",
+            test_path("configs"),
+            "-c",
+            example_path("configs"),
+            "-d",
+            example_path("data"),
+            "-o",
+            test_path("output"),
+        ],
+        check=True,
+    )
 
     regress()
-
-
-def test_psrc():
-    _test_psrc(sharrow=False)
-
-
-def test_psrc_sharrow():
-    _test_psrc(sharrow=True)
 
 
 if __name__ == "__main__":
