@@ -4,23 +4,10 @@ import logging
 
 import pandas as pd
 
-<<<<<<< HEAD:activitysim/abm/models/telecommute_frequency.py
 from activitysim.abm.models.util import estimation
 from activitysim.core import config, expressions, inject, pipeline, simulate, tracing
 
 logger = logging.getLogger("activitysim")
-=======
-from activitysim.core import tracing
-from activitysim.core import config
-from activitysim.core import pipeline
-from activitysim.core import simulate
-from activitysim.core import inject
-from activitysim.core import expressions
-
-from activitysim.abm.models.util import estimation
-
-logger = logging.getLogger(__name__)
->>>>>>> BayDAG:activitysim/examples/prototype_mwcog/extensions/telecommute_frequency.py
 
 
 @inject.step()
@@ -31,12 +18,6 @@ def telecommute_frequency(persons_merged, persons, chunk_size, trace_hh_id):
     '1 day per week', '2 to 3 days per week' and '4 days per week'. This model
     reflects the choices of people who prefer a combination of working from home and
     office during a week.
-<<<<<<< HEAD:activitysim/abm/models/telecommute_frequency.py
-=======
-
-    The main interface to the telecommute frequency model is the telecommute_frequency() function.
-    This function is registered as an orca step in the example Pipeline.
->>>>>>> BayDAG:activitysim/examples/prototype_mwcog/extensions/telecommute_frequency.py
     """
 
     trace_label = "telecommute_frequency"

@@ -20,13 +20,8 @@ want_dest_choice_sample_tables: False
 
 
 # - tracing
-<<<<<<< HEAD:activitysim/examples/prototype_mtc/configs_production/settings.yaml
 # trace_hh_id:
 # trace_od:
-=======
-trace_hh_id:
-trace_od:
->>>>>>> BayDAG:activitysim/examples/prototype_mtc_extended/configs_mp/settings.yaml
 
 # to resume after last successful checkpoint, specify resume_after: _
 # resume_after: trip_purpose_and_destination

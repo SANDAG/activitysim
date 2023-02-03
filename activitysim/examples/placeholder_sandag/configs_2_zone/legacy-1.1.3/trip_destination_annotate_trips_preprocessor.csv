@@ -7,10 +7,6 @@ Description,Target,Expression
 #,,not needed as school is not chosen as an intermediate trip destination
 #,_grade_school,"(df.primary_purpose == 'school') & reindex(persons.is_gradeschool, df.person_id)"
 #,size_segment,"df.primary_purpose.where(df.primary_purpose != 'school', np.where(_grade_school,'gradeschool', 'highschool'))"
-<<<<<<< HEAD:activitysim/examples/placeholder_sandag/configs_2_zone/legacy-1.1.3/trip_destination_annotate_trips_preprocessor.csv
 ,tour_mode_is_walk,"reindex(tours.tour_mode, df.tour_id)=='WALK'"
 ,tour_mode_is_bike,"reindex(tours.tour_mode, df.tour_id)=='BIKE'"
 ,tour_leg_dest,"np.where(df.outbound,reindex(tours.destination, df.tour_id), reindex(tours.origin, df.tour_id)).astype(int)"
-=======
-,tour_leg_dest,"np.where(df.outbound,reindex(tours.destination, df.tour_id), reindex(tours.origin, df.tour_id))"
->>>>>>> BayDAG:activitysim/examples/prototype_semcog/configs/trip_destination_annotate_trips_preprocessor.csv
