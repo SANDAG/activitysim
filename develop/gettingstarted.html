@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Getting Started &#8212; ActivitySim 0.9.6.dev1005+g7ead422d</title>
+    <title>Getting Started &#8212; ActivitySim 0.9.6.dev1758+g3790e7ec</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -35,7 +35,7 @@
     <script src="_static/design-tabs.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="next" title="Command Line Tools" href="users-guide/cli-tools.html" />
     <link rel="prev" title="Users Guide" href="users-guide/index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -194,6 +194,11 @@ function checkPageExistsAndRedirect(event) {
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="users-guide/cli-tools.html">
+   Command Line Tools
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="examples.html">
    Examples
   </a>
@@ -210,27 +215,47 @@ function checkPageExistsAndRedirect(event) {
   <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="users-guide/_generated/activitysim.core.configuration.Settings.html">
-     activitysim.core.configuration.Settings
+     Settings
     </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="users-guide/_generated/activitysim.core.configuration.InputTable.html">
-     activitysim.core.configuration.InputTable
+     InputTable
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="users-guide/_generated/activitysim.core.configuration.OutputTable.html">
+     OutputTable
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="users-guide/_generated/activitysim.core.configuration.OutputTables.html">
+     OutputTables
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="users-guide/_generated/activitysim.core.configuration.MultiprocessStep.html">
+     MultiprocessStep
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="users-guide/_generated/activitysim.core.configuration.MultiprocessStepSlice.html">
+     MultiprocessStepSlice
     </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="users-guide/_generated/activitysim.core.configuration.NetworkSettings.html">
-     activitysim.core.configuration.NetworkSettings
+     NetworkSettings
     </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="users-guide/_generated/activitysim.core.configuration.TAZ_Settings.html">
-     activitysim.core.configuration.TAZ_Settings
+     TAZ_Settings
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="users-guide/_generated/activitysim.core.configuration.ZarrDigitalEncoding.html">
-     activitysim.core.configuration.ZarrDigitalEncoding
+    <a class="reference internal" href="users-guide/_generated/activitysim.core.configuration.DigitalEncoding.html">
+     DigitalEncoding
     </a>
    </li>
   </ul>
@@ -273,6 +298,11 @@ function checkPageExistsAndRedirect(event) {
 
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#pre-packaged-installer">
+   Pre-packaged Installer
+  </a>
+ </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#installation">
    Installation
@@ -335,8 +365,29 @@ function checkPageExistsAndRedirect(event) {
 <p class="admonition-title">Note</p>
 <p>ActivitySim is under active development</p>
 </div>
+<section id="pre-packaged-installer">
+<span id="index-0"></span><h2>Pre-packaged Installer<a class="headerlink" href="#pre-packaged-installer" title="Permalink to this headline">#</a></h2>
+<p>Begining with version 1.2, ActivitySim is now available for Windows via a
+pre-packaged installer.  This installer provides everything you need to run
+ActivitySim, including Python, all the necessary supporting packages, and
+ActivitySim itself.  You should only choose this installation process if you
+plan to use ActivitySim but you don’t need or want to do other Python
+development.  Note this installer is provided as an “executable” which (of course)
+installs a variety of things on your system, and it is quite likely to be flagged by
+Windows, anti-virus, or institutional IT policies as “unusual” software, which
+may require special treatment to actually install and use.</p>
+<p>Download the installer from GitHub <a class="reference external" href="https://github.com/ActivitySim/activitysim/releases/download/v1.2.0/Activitysim-1.2.0-Windows-x86_64.exe">here</a>.
+It is strongly recommended to choose the option to install “for me only”, as this
+should not require administrator privileges on your machine.  Pay attention
+to the <em>complete path</em> of the installation location. You will need to know
+that path to run ActivitySim in the future, as the installer does not modify
+your “PATH” and the location of the <cite>ActivitySim.exe</cite> command line tool will not
+be available without knowing the path to where the install has happened.</p>
+<p>Once the install is complete, ActivitySim can be run directly from any command
+prompt by running <cite>&lt;install_location&gt;/Scripts/ActivitySim.exe</cite>.</p>
+</section>
 <section id="installation">
-<span id="index-0"></span><h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h2>
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h2>
 <p>1. It is recommended that you install and use a <em>conda</em> package manager
 for your system. One easy way to do so is by using
 <a class="reference external" href="https://github.com/conda-forge/miniforge#mambaforge">Mambaforge</a>.
@@ -383,7 +434,7 @@ including ActivitySim, itself. For example:</p>
 <p>Additional libraries can also be installed later.  You may want to consider these
 tools for certain development tasks:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># packages for testing</span>
-<span class="n">mamba</span> <span class="n">install</span> <span class="n">pytest</span> <span class="n">pytest</span><span class="o">-</span><span class="n">cov</span> <span class="n">coveralls</span> <span class="n">pycodestyle</span> <span class="n">pytest</span><span class="o">-</span><span class="n">regressions</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">--</span><span class="n">override</span><span class="o">-</span><span class="n">channels</span> <span class="o">-</span><span class="n">n</span> <span class="n">asim</span>
+<span class="n">mamba</span> <span class="n">install</span> <span class="n">pytest</span> <span class="n">pytest</span><span class="o">-</span><span class="n">cov</span> <span class="n">coveralls</span> <span class="n">black</span> <span class="n">flake8</span> <span class="n">pytest</span><span class="o">-</span><span class="n">regressions</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">--</span><span class="n">override</span><span class="o">-</span><span class="n">channels</span> <span class="o">-</span><span class="n">n</span> <span class="n">asim</span>
 
 <span class="c1"># packages for building documentation</span>
 <span class="n">mamba</span> <span class="n">install</span> <span class="n">sphinx</span> <span class="n">numpydoc</span> <span class="n">sphinx_rtd_theme</span><span class="o">==</span><span class="mf">0.5.2</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">--</span><span class="n">override</span><span class="o">-</span><span class="n">channels</span> <span class="o">-</span><span class="n">n</span> <span class="n">asim</span>
@@ -470,8 +521,14 @@ check the current active environment with <code class="docutils literal notransl
 <p>To setup and run the primary example (see <a class="reference internal" href="examples.html#examples"><span class="std std-ref">Examples</span></a>), do the following:</p>
 <ul class="simple">
 <li><p>Open a command prompt</p></li>
-<li><p>Activate the conda environment with ActivitySim installed (i.e. <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">asim</span></code>)</p></li>
-<li><p>Type <code class="docutils literal notranslate"><span class="pre">activitysim</span> <span class="pre">create</span> <span class="pre">-e</span> <span class="pre">prototype_mtc</span> <span class="pre">-d</span> <span class="pre">test_prototype_mtc</span></code> to copy the very small prototype_mtc example to a new test_prototype_mtc directory</p></li>
+<li><p>If you installed ActivitySim using conda environments, activate the conda
+environment with ActivitySim installed (i.e. <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">asim</span></code>)</p></li>
+<li><p>Or, if you used the <span class="xref std std-ref">pre-packaged installer</span>,
+replace all the commands below that call <code class="docutils literal notranslate"><span class="pre">activitysim</span> <span class="pre">...</span></code> with the complete
+path to your installed location, which is probably something
+like <code class="docutils literal notranslate"><span class="pre">c:\programdata\activitysim\scripts\activitysim.exe</span></code>.</p></li>
+<li><p>Type <code class="docutils literal notranslate"><span class="pre">activitysim</span> <span class="pre">create</span> <span class="pre">-e</span> <span class="pre">prototype_mtc</span> <span class="pre">-d</span> <span class="pre">test_prototype_mtc</span></code> to copy
+the very small prototype_mtc example to a new test_prototype_mtc directory</p></li>
 <li><p>Change to the test_prototype_mtc directory</p></li>
 <li><p>Type <code class="docutils literal notranslate"><span class="pre">activitysim</span> <span class="pre">run</span> <span class="pre">-c</span> <span class="pre">configs</span> <span class="pre">-o</span> <span class="pre">output</span> <span class="pre">-d</span> <span class="pre">data</span></code> to run the example</p></li>
 <li><p>Review the outputs in the output directory</p></li>
@@ -550,10 +607,10 @@ line as follows: <code class="docutils literal notranslate"><span class="pre">SE
             <p class="prev-next-title">Users Guide</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="examples.html" title="next page">
+    <a class='right-next' id="next-link" href="users-guide/cli-tools.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Examples</p>
+        <p class="prev-next-title">Command Line Tools</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
@@ -573,7 +630,7 @@ line as follows: <code class="docutils literal notranslate"><span class="pre">SE
     <div class="footer-item">
       <!-- This will display the version of the docs -->
 <p class="last-updated">
-ActivitySim 0.9.6.dev1005+g7ead422d, documentation last updated Sep 14, 2022.<br/>
+ActivitySim 0.9.6.dev1758+g3790e7ec, documentation last updated Feb 15, 2023.<br/>
 </p>
     </div>
     

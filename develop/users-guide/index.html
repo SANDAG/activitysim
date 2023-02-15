@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Users Guide &#8212; ActivitySim 0.9.6.dev1005+g7ead422d</title>
+    <title>Users Guide &#8212; ActivitySim 0.9.6.dev1758+g3790e7ec</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -194,6 +194,11 @@ function checkPageExistsAndRedirect(event) {
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="cli-tools.html">
+   Command Line Tools
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="../examples.html">
    Examples
   </a>
@@ -210,27 +215,47 @@ function checkPageExistsAndRedirect(event) {
   <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="_generated/activitysim.core.configuration.Settings.html">
-     activitysim.core.configuration.Settings
+     Settings
     </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="_generated/activitysim.core.configuration.InputTable.html">
-     activitysim.core.configuration.InputTable
+     InputTable
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="_generated/activitysim.core.configuration.OutputTable.html">
+     OutputTable
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="_generated/activitysim.core.configuration.OutputTables.html">
+     OutputTables
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="_generated/activitysim.core.configuration.MultiprocessStep.html">
+     MultiprocessStep
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="_generated/activitysim.core.configuration.MultiprocessStepSlice.html">
+     MultiprocessStepSlice
     </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="_generated/activitysim.core.configuration.NetworkSettings.html">
-     activitysim.core.configuration.NetworkSettings
+     NetworkSettings
     </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="_generated/activitysim.core.configuration.TAZ_Settings.html">
-     activitysim.core.configuration.TAZ_Settings
+     TAZ_Settings
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="_generated/activitysim.core.configuration.ZarrDigitalEncoding.html">
-     activitysim.core.configuration.ZarrDigitalEncoding
+    <a class="reference internal" href="_generated/activitysim.core.configuration.DigitalEncoding.html">
+     DigitalEncoding
     </a>
    </li>
   </ul>
@@ -315,6 +340,7 @@ the development and management of the ActivitySim is on the <a class="reference 
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../gettingstarted.html#pre-packaged-installer">Pre-packaged Installer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../gettingstarted.html#installation">Installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../gettingstarted.html#alternative-installation-methods">Alternative Installation Methods</a></li>
 </ul>
@@ -323,6 +349,17 @@ the development and management of the ActivitySim is on the <a class="reference 
 <li class="toctree-l2"><a class="reference internal" href="../gettingstarted.html#try-the-notebooks">Try the Notebooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../gettingstarted.html#hardware">Hardware</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../gettingstarted.html#mkl-settings">MKL Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli-tools.html">Command Line Tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli-tools.html#activitysim-run">activitysim run</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli-tools.html#named-arguments">Named Arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cli-tools.html#activitysim-create">activitysim create</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli-tools.html#named-arguments">Named Arguments</a></li>
 </ul>
 </li>
 </ul>
@@ -378,11 +415,21 @@ the development and management of the ActivitySim is on the <a class="reference 
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="_generated/activitysim.core.configuration.Settings.html">activitysim.core.configuration.Settings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="_generated/activitysim.core.configuration.InputTable.html">activitysim.core.configuration.InputTable</a></li>
-<li class="toctree-l2"><a class="reference internal" href="_generated/activitysim.core.configuration.NetworkSettings.html">activitysim.core.configuration.NetworkSettings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="_generated/activitysim.core.configuration.TAZ_Settings.html">activitysim.core.configuration.TAZ_Settings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="_generated/activitysim.core.configuration.ZarrDigitalEncoding.html">activitysim.core.configuration.ZarrDigitalEncoding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#top-level-settings">Top Level Settings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="_generated/activitysim.core.configuration.Settings.html">Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_generated/activitysim.core.configuration.InputTable.html">InputTable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_generated/activitysim.core.configuration.OutputTable.html">OutputTable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_generated/activitysim.core.configuration.OutputTables.html">OutputTables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_generated/activitysim.core.configuration.MultiprocessStep.html">MultiprocessStep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_generated/activitysim.core.configuration.MultiprocessStepSlice.html">MultiprocessStepSlice</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#network-level-of-service">Network Level of Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="_generated/activitysim.core.configuration.NetworkSettings.html">NetworkSettings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_generated/activitysim.core.configuration.TAZ_Settings.html">TAZ_Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_generated/activitysim.core.configuration.DigitalEncoding.html">DigitalEncoding</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Interface</a><ul>
@@ -475,7 +522,7 @@ the development and management of the ActivitySim is on the <a class="reference 
     <div class="footer-item">
       <!-- This will display the version of the docs -->
 <p class="last-updated">
-ActivitySim 0.9.6.dev1005+g7ead422d, documentation last updated Sep 14, 2022.<br/>
+ActivitySim 0.9.6.dev1758+g3790e7ec, documentation last updated Feb 15, 2023.<br/>
 </p>
     </div>
     
