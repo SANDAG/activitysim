@@ -35,9 +35,13 @@ def joint_tour_frequency_composition(
 
     model_settings = config.read_model_settings(model_settings_file_name)
 
+    # alt_tdd = simulate.read_model_alts(
+    #     "joint_tour_frequency_composition_alternatives.csv", set_index="alt"
+    # )
     alt_tdd = simulate.read_model_alts(
-        "joint_tour_frequency_composition_alternatives.csv", set_index="alt"
+        "joint_tour_frequency_composition_alternatives.csv", set_index=None
     )
+    # alt_tdd.index = alt_tdd['alt'].values
 
     # - only interested in households with more than one cdap travel_active person and
     # - at least one non-preschooler
@@ -94,13 +98,15 @@ def joint_tour_frequency_composition(
         estimator.write_model_settings(model_settings, model_settings_file_name)
         estimator.write_coefficients(coefficients_df, model_settings)
         estimator.write_choosers(choosers)
-        estimator.write_alternatives(alts)
 
         assert choosers.index.name == "household_id"
         assert "household_id" not in choosers.columns
         choosers["household_id"] = choosers.index
 
         estimator.set_chooser_id(choosers.index.name)
+        
+        # FIXME set_alt_id - do we need this for interaction_simulate estimation bundle tables?
+        estimator.set_alt_id("alt_id")
 
     # The choice value 'joint_tour_frequency_composition' assigned by interaction_simulate
     # is the index value of the chosen alternative in the alternatives table.
@@ -134,6 +140,7 @@ def joint_tour_frequency_composition(
     # - but we don't know the tour participants yet
     # - so we arbitrarily choose the first person in the household
     # - to be point person for the purpose of generating an index and setting origin
+    # FIXME: not all models are guaranteed to have PNUM
     temp_point_persons = persons.loc[persons.PNUM == 1]
     temp_point_persons["person_id"] = temp_point_persons.index
     temp_point_persons = temp_point_persons.set_index("household_id")

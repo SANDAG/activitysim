@@ -480,62 +480,66 @@ def school_escorting(
             )
             escort_bundles.append(bundles)
 
-    escort_bundles = pd.concat(escort_bundles)
-    escort_bundles["bundle_id"] = (
-        escort_bundles["household_id"] * 10
-        + escort_bundles.groupby("household_id").cumcount()
-        + 1
-    )
-    escort_bundles.sort_values(
-        by=["household_id", "school_escort_direction"],
-        ascending=[True, False],
-        inplace=True,
-    )
-
-    school_escort_tours = school_escort_tours_trips.create_pure_school_escort_tours(
-        escort_bundles
-    )
-    chauf_tour_id_map = {
-        v: k for k, v in school_escort_tours["bundle_id"].to_dict().items()
-    }
-    escort_bundles["chauf_tour_id"] = np.where(
-        escort_bundles["escort_type"] == "ride_share",
-        escort_bundles["first_mand_tour_id"],
-        escort_bundles["bundle_id"].map(chauf_tour_id_map),
-    )
-
-    tours = school_escort_tours_trips.add_pure_escort_tours(tours, school_escort_tours)
-    tours = school_escort_tours_trips.process_tours_after_escorting_model(
-        escort_bundles, tours
-    )
-
-    school_escort_trips = school_escort_tours_trips.create_school_escort_trips(
-        escort_bundles
-    )
-
-    # update pipeline
     pipeline.replace_table("households", households)
-    pipeline.replace_table("tours", tours)
-    pipeline.get_rn_generator().drop_channel("tours")
-    pipeline.get_rn_generator().add_channel("tours", tours)
-    pipeline.replace_table("escort_bundles", escort_bundles)
-    # save school escorting tours and trips in pipeline so we can overwrite results from downstream models
-    pipeline.replace_table("school_escort_tours", school_escort_tours)
-    pipeline.replace_table("school_escort_trips", school_escort_trips)
 
-    # updating timetable object with pure escort tours so joint tours do not schedule ontop
-    timetable = inject.get_injectable("timetable")
+    escort_bundles = pd.concat(escort_bundles)
 
-    # Need to do this such that only one person is in nth_tours
-    # thus, looping through tour_category and tour_num
-    # including mandatory tours because their start / end times may have
-    # changed to match the school escort times
-    for tour_category in tours.tour_category.unique():
-        for tour_num, nth_tours in tours[tours.tour_category == tour_category].groupby(
-            "tour_num", sort=True
-        ):
-            timetable.assign(
-                window_row_ids=nth_tours["person_id"], tdds=nth_tours["tdd"]
-            )
+    if len(escort_bundles) > 0:
+        escort_bundles["bundle_id"] = (
+            escort_bundles["household_id"] * 10
+            + escort_bundles.groupby("household_id").cumcount()
+            + 1
+        )
+        escort_bundles.sort_values(
+            by=["household_id", "school_escort_direction"],
+            ascending=[True, False],
+            inplace=True,
+        )
 
-    timetable.replace_table()
+        school_escort_tours = school_escort_tours_trips.create_pure_school_escort_tours(
+            escort_bundles
+        )
+        chauf_tour_id_map = {
+            v: k for k, v in school_escort_tours["bundle_id"].to_dict().items()
+        }
+        escort_bundles["chauf_tour_id"] = np.where(
+            escort_bundles["escort_type"] == "ride_share",
+            escort_bundles["first_mand_tour_id"],
+            escort_bundles["bundle_id"].map(chauf_tour_id_map),
+        )
+
+        tours = school_escort_tours_trips.add_pure_escort_tours(tours, school_escort_tours)
+        tours = school_escort_tours_trips.process_tours_after_escorting_model(
+            escort_bundles, tours
+        )
+
+        school_escort_trips = school_escort_tours_trips.create_school_escort_trips(
+            escort_bundles
+        )
+
+        # update pipeline
+        
+        pipeline.replace_table("tours", tours)
+        pipeline.get_rn_generator().drop_channel("tours")
+        pipeline.get_rn_generator().add_channel("tours", tours)
+        pipeline.replace_table("escort_bundles", escort_bundles)
+        # save school escorting tours and trips in pipeline so we can overwrite results from downstream models
+        pipeline.replace_table("school_escort_tours", school_escort_tours)
+        pipeline.replace_table("school_escort_trips", school_escort_trips)
+
+        # updating timetable object with pure escort tours so joint tours do not schedule ontop
+        timetable = inject.get_injectable("timetable")
+
+        # Need to do this such that only one person is in nth_tours
+        # thus, looping through tour_category and tour_num
+        # including mandatory tours because their start / end times may have
+        # changed to match the school escort times
+        for tour_category in tours.tour_category.unique():
+            for tour_num, nth_tours in tours[tours.tour_category == tour_category].groupby(
+                "tour_num", sort=True
+            ):
+                timetable.assign(
+                    window_row_ids=nth_tours["person_id"], tdds=nth_tours["tdd"]
+                )
+
+        timetable.replace_table()
