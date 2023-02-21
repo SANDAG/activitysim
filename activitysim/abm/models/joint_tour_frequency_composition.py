@@ -38,6 +38,7 @@ def joint_tour_frequency_composition(
     # alt_tdd = simulate.read_model_alts(
     #     "joint_tour_frequency_composition_alternatives.csv", set_index="alt"
     # )
+    # FIXME setting index as "alt" causes crash in estimation mode...
     alt_tdd = simulate.read_model_alts(
         "joint_tour_frequency_composition_alternatives.csv", set_index=None
     )
@@ -104,7 +105,7 @@ def joint_tour_frequency_composition(
         choosers["household_id"] = choosers.index
 
         estimator.set_chooser_id(choosers.index.name)
-        
+
         # FIXME set_alt_id - do we need this for interaction_simulate estimation bundle tables?
         estimator.set_alt_id("alt_id")
 

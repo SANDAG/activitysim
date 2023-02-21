@@ -508,7 +508,9 @@ def school_escorting(
             escort_bundles["bundle_id"].map(chauf_tour_id_map),
         )
 
-        tours = school_escort_tours_trips.add_pure_escort_tours(tours, school_escort_tours)
+        tours = school_escort_tours_trips.add_pure_escort_tours(
+            tours, school_escort_tours
+        )
         tours = school_escort_tours_trips.process_tours_after_escorting_model(
             escort_bundles, tours
         )
@@ -518,7 +520,7 @@ def school_escorting(
         )
 
         # update pipeline
-        
+
         pipeline.replace_table("tours", tours)
         pipeline.get_rn_generator().drop_channel("tours")
         pipeline.get_rn_generator().add_channel("tours", tours)
@@ -535,9 +537,9 @@ def school_escorting(
         # including mandatory tours because their start / end times may have
         # changed to match the school escort times
         for tour_category in tours.tour_category.unique():
-            for tour_num, nth_tours in tours[tours.tour_category == tour_category].groupby(
-                "tour_num", sort=True
-            ):
+            for tour_num, nth_tours in tours[
+                tours.tour_category == tour_category
+            ].groupby("tour_num", sort=True):
                 timetable.assign(
                     window_row_ids=nth_tours["person_id"], tdds=nth_tours["tdd"]
                 )
