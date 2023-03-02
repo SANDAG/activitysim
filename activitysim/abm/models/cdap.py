@@ -153,7 +153,9 @@ def cdap_simulate(persons_merged, persons, households, chunk_size, trace_hh_id):
             estimator.write_table(spec, "spec_%s" % hhsize, append=False)
             if add_joint_tour_utility:
                 joint_spec = cdap.get_cached_joint_spec(hhsize)
-                estimator.write_table(joint_spec, "joint_spec_%s" % hhsize, append=False)
+                estimator.write_table(
+                    joint_spec, "joint_spec_%s" % hhsize, append=False
+                )
 
     logger.info("Running cdap_simulate with %d persons", len(persons_merged.index))
 

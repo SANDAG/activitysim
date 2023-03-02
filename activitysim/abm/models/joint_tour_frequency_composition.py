@@ -42,7 +42,7 @@ def joint_tour_frequency_composition(
     alt_tdd = simulate.read_model_alts(
         "joint_tour_frequency_composition_alternatives.csv", set_index=None
     )
-    alt_tdd.index = alt_tdd['alt'].values
+    alt_tdd.index = alt_tdd["alt"].values
 
     # - only interested in households with more than one cdap travel_active person and
     # - at least one non-preschooler
