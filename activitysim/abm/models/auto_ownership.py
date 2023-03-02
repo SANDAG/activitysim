@@ -2,7 +2,7 @@
 # See full license in LICENSE.txt.
 import logging
 
-from activitysim.core import config, inject, pipeline, simulate, tracing
+from activitysim.core import config, expressions, inject, pipeline, simulate, tracing
 
 from .util import estimation
 
@@ -31,6 +31,21 @@ def auto_ownership_simulate(households, households_merged, chunk_size, trace_hh_
     choosers = households_merged.to_frame()
 
     logger.info("Running %s with %d households", trace_label, len(choosers))
+
+    # - preprocessor
+    preprocessor_settings = model_settings.get("preprocessor", None)
+    if preprocessor_settings:
+
+        locals_d = {}
+        if constants is not None:
+            locals_d.update(constants)
+
+        expressions.assign_columns(
+            df=choosers,
+            model_settings=preprocessor_settings,
+            locals_dict=locals_d,
+            trace_label=trace_label,
+        )
 
     if estimator:
         estimator.write_model_settings(model_settings, model_settings_file_name)
