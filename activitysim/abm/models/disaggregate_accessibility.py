@@ -745,11 +745,9 @@ def compute_disaggregate_accessibility(network_los, chunk_size, trace_hh_id):
     for ch in list(pipeline.get_rn_generator().channels.keys()):
         pipeline.get_rn_generator().drop_channel(ch)
 
-    # Drop any prematurely added traceables
-    for trace in [
-        x for x in inject.get_injectable("traceable_tables") if "proto_" not in x
-    ]:
-        tracing.deregister_traceable_table(trace)
+    # Dropping all traceable tables
+    for table in inject.get_injectable("traceable_tables"):
+        tracing.deregister_traceable_table(table)
 
     # need to clear any premature tables that were added during the previous run
     orca._TABLES.clear()
