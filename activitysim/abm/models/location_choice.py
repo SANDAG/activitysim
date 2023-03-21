@@ -812,13 +812,19 @@ def run_location_choice(
             # grabbing index, could be person_id or proto_person_id
             index_name = choices_df.index.name
             # merging mode choice logsum of chosen alternative to choices
-            choices_df = pd.merge(
-                choices_df.reset_index(), 
-                location_sample_df.reset_index()[[index_name, model_settings["ALT_DEST_COL_NAME"], ALT_LOGSUM]],
-                how='left',
-                left_on=[index_name, 'choice'],
-                right_on=[index_name, model_settings["ALT_DEST_COL_NAME"]]
-            ).drop(columns=model_settings["ALT_DEST_COL_NAME"]).set_index(index_name)
+            choices_df = (
+                pd.merge(
+                    choices_df.reset_index(),
+                    location_sample_df.reset_index()[
+                        [index_name, model_settings["ALT_DEST_COL_NAME"], ALT_LOGSUM]
+                    ],
+                    how="left",
+                    left_on=[index_name, "choice"],
+                    right_on=[index_name, model_settings["ALT_DEST_COL_NAME"]],
+                )
+                .drop(columns=model_settings["ALT_DEST_COL_NAME"])
+                .set_index(index_name)
+            )
 
         choices_list.append(choices_df)
 
@@ -894,7 +900,9 @@ def iterate_location_choice(
     dest_choice_column_name = model_settings["DEST_CHOICE_COLUMN_NAME"]
     dc_logsum_column_name = model_settings.get("DEST_CHOICE_LOGSUM_COLUMN_NAME")
     mc_logsum_column_name = model_settings.get("MODE_CHOICE_LOGSUM_COLUMN_NAME")
-    want_logsums = (dc_logsum_column_name is not None) | (mc_logsum_column_name is not None)
+    want_logsums = (dc_logsum_column_name is not None) | (
+        mc_logsum_column_name is not None
+    )
 
     sample_table_name = model_settings.get("DEST_CHOICE_SAMPLE_TABLE_NAME")
     want_sample_table = (

@@ -788,15 +788,23 @@ def interaction_trace_rows(interaction_df, choosers, sample_size=None):
     elif "person_id" in choosers.columns and persons_table_name in traceable_table_ids:
         slicer_column_name = "person_id"
         targets = traceable_table_ids[persons_table_name]
-    elif choosers.index.name == "proto_person_id" and persons_table_name in traceable_table_ids:
+    elif (
+        choosers.index.name == "proto_person_id"
+        and persons_table_name in traceable_table_ids
+    ):
         slicer_column_name = choosers.index.name
         targets = traceable_table_ids[persons_table_name]
-    elif choosers.index.name == "proto_household_id" and households_table_name in traceable_table_ids:
+    elif (
+        choosers.index.name == "proto_household_id"
+        and households_table_name in traceable_table_ids
+    ):
         slicer_column_name = choosers.index.name
         targets = traceable_table_ids[households_table_name]
-    elif choosers.index.name == "proto_tour_id" and 'proto_tours' in traceable_table_ids:
+    elif (
+        choosers.index.name == "proto_tour_id" and "proto_tours" in traceable_table_ids
+    ):
         slicer_column_name = choosers.index.name
-        targets = traceable_table_ids['proto_tours']
+        targets = traceable_table_ids["proto_tours"]
     else:
         print(choosers.columns)
         raise RuntimeError(
