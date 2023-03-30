@@ -211,7 +211,10 @@ def participants_chooser(probs, choosers, spec, trace_label):
                 probs[non_choice_col] = 1 - probs[choice_col]
                 if iter > MAX_ITERATIONS + 1:
                     raise RuntimeError(
-                        f"{num_tours_remaining} tours could not be satisfied even with forcing participation"
+                        f"{num_tours_remaining} tours could not be satisfied even with forcing participation." 
+                        " This is likely due to some inconsistency between the tour frequency & composition model" 
+                        " and the joint tour participation model, e.g. overlapping time windows with mandatory tours."
+                        " It could also be inconsistencies in the data if run in estimation mode."
                     )
             else:
                 raise RuntimeError(
