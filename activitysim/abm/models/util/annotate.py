@@ -15,6 +15,44 @@ Code for annotating tables
 logger = logging.getLogger(__name__)
 
 
+def annotate_households(model_settings, trace_label, locals_dict={}):
+    """
+    Add columns to the households table in the pipeline according to spec.
+
+    Parameters
+    ----------
+    model_settings : dict
+    trace_label : str
+    """
+    households = inject.get_table("households").to_frame()
+    expressions.assign_columns(
+        df=households,
+        model_settings=model_settings.get("annotate_households"),
+        locals_dict=locals_dict,
+        trace_label=tracing.extend_trace_label(trace_label, "annotate_households"),
+    )
+    pipeline.replace_table("households", households)
+
+
+def annotate_persons(model_settings, trace_label, locals_dict={}):
+    """
+    Add columns to the persons table in the pipeline according to spec.
+
+    Parameters
+    ----------
+    model_settings : dict
+    trace_label : str
+    """
+    persons = inject.get_table("persons").to_frame()
+    expressions.assign_columns(
+        df=persons,
+        model_settings=model_settings.get("annotate_persons"),
+        locals_dict=locals_dict,
+        trace_label=tracing.extend_trace_label(trace_label, "annotate_persons"),
+    )
+    pipeline.replace_table("persons", persons)
+
+
 def annotate_tours(model_settings, trace_label, locals_dict={}):
     """
     Add columns to the tours table in the pipeline according to spec.
