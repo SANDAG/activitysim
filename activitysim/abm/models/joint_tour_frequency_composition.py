@@ -36,6 +36,7 @@ def joint_tour_frequency_composition(
     model_settings = config.read_model_settings(model_settings_file_name)
 
     # FIXME setting index as "alt" causes crash in estimation mode...
+    # happens in school escorting too!
     # alt_tdd = simulate.read_model_alts(
     #     "joint_tour_frequency_composition_alternatives.csv", set_index="alt"
     # )

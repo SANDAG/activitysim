@@ -399,6 +399,10 @@ def merge_school_escort_trips_into_pipeline():
     tours = pipeline.get_table("tours")
     trips = pipeline.get_table("trips")
 
+    # checking to see if there are school escort trips to merge in
+    if len(school_escort_trips) == 0:
+        return trips
+
     # want to remove stops if school escorting takes place on that half tour so we can replace them with the actual stops
     out_se_tours = tours[
         tours["school_esc_outbound"].isin(["pure_escort", "ride_share"])
@@ -602,6 +606,10 @@ def force_escortee_tour_modes_to_match_chauffeur(tours):
     # which tour mode should it be set to?  Currently it's whatever comes last.
     # Does it even matter if trip modes are getting matched later?
     escort_bundles = inject.get_table("escort_bundles").to_frame()
+
+    if len(escort_bundles) == 0:
+        # do not need to do anything if no escorting
+        return tours
 
     # grabbing the school tour ids for each school escort bundle
     se_tours = escort_bundles[["school_tour_ids", "chauf_tour_id"]].copy()
