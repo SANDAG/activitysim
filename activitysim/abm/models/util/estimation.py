@@ -46,11 +46,12 @@ class Estimator(object):
             os.makedirs(output_dir)  # make directory if needed
 
         # delete estimation files
-        unlink_files(self.output_directory(), file_types=("csv", "yaml"))
+        unlink_files(self.output_directory(), file_types=("csv", "yaml", "hdf"))
         if self.bundle_name != self.model_name:
             # kind of inelegant to always delete these, but ok as they are redundantly recreated for each sub model
             unlink_files(
-                self.output_directory(bundle_directory=True), file_types=("csv", "yaml")
+                self.output_directory(bundle_directory=True),
+                file_types=("csv", "yaml", "hdf"),
             )
 
         # FIXME - not required?
@@ -218,6 +219,13 @@ class Estimator(object):
         if len(self.omnibus_tables) == 0:
             return
 
+        settings = config.read_model_settings(ESTIMATION_SETTINGS_FILE_NAME)
+
+        edbs_to_skip = settings.get("SKIP_BUNDLE_WRITE_FOR", [])
+        if self.bundle_name in edbs_to_skip:
+            self.debug(f"Skipping write to disk for {self.bundle_name}")
+            return
+
         for omnibus_table, table_names in self.omnibus_tables.items():
 
             self.debug(
@@ -236,12 +244,20 @@ class Estimator(object):
                 1 if omnibus_table in self.omnibus_tables_append_columns else 0
             )
 
-            df = pd.concat([self.tables[t] for t in table_names], axis=concat_axis)
+            # df = pd.concat([self.tables[t] for t in table_names], axis=concat_axis)
+            if len(table_names) == 0:
+                # empty tables
+                df = pd.DataFrame()
+            else:
+                df = pd.concat([self.tables[t] for t in table_names], axis=concat_axis)
+
+            self.debug(f"sorting tables: {table_names}")
             df.sort_index(ascending=True, inplace=True, kind="mergesort")
 
             file_path = self.output_file_path(omnibus_table, "csv")
             assert not os.path.isfile(file_path)
 
+            self.debug(f"writing table: {file_path}")
             df.to_csv(file_path, mode="a", index=True, header=True)
 
             self.debug("write_omnibus_choosers: %s" % file_path)
