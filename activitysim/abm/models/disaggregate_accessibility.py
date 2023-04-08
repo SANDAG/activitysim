@@ -741,11 +741,13 @@ def compute_disaggregate_accessibility(network_los, chunk_size, trace_hh_id):
     logsums["proto_disaggregate_accessibility"] = access_df
 
     # Drop any tables prematurely created
-    for tablename in [
-        "school_destination_size",
-        "workplace_destination_size",
-    ]:
-        pipeline.drop_table(tablename)
+    # FIXME: dropping size tables breaks restart functionality for location choice models.
+    #        hopefully this pipeline mess just goes away with move away from orca....
+    # for tablename in [
+    #     "school_destination_size",
+    #     "workplace_destination_size",
+    # ]:
+    #     pipeline.drop_table(tablename)
 
     for ch in list(pipeline.get_rn_generator().channels.keys()):
         pipeline.get_rn_generator().drop_channel(ch)
