@@ -46,12 +46,11 @@ class Estimator(object):
             os.makedirs(output_dir)  # make directory if needed
 
         # delete estimation files
-        unlink_files(self.output_directory(), file_types=("csv", "yaml", "hdf"))
+        unlink_files(self.output_directory(), file_types=("csv", "yaml"))
         if self.bundle_name != self.model_name:
             # kind of inelegant to always delete these, but ok as they are redundantly recreated for each sub model
             unlink_files(
-                self.output_directory(bundle_directory=True),
-                file_types=("csv", "yaml", "hdf"),
+                self.output_directory(bundle_directory=True), file_types=("csv", "yaml")
             )
 
         # FIXME - not required?
