@@ -511,7 +511,7 @@ def school_escorting(
 
     escort_bundles = pd.concat(escort_bundles)
 
-    # possible to get
+    # Only want to create bundles and tours and trips if at least one household has school escorting
     if len(escort_bundles) > 0:
         escort_bundles["bundle_id"] = (
             escort_bundles["household_id"] * 10

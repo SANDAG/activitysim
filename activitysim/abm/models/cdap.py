@@ -190,6 +190,7 @@ def cdap_simulate(persons_merged, persons, households, chunk_size, trace_hh_id):
         estimator.write_choices(choices)
         choices = estimator.get_survey_values(choices, "persons", "cdap_activity")
         if add_joint_tour_utility:
+            hh_joint.index.name = 'household_id'
             hh_joint = estimator.get_survey_values(
                 hh_joint, "households", "has_joint_tour"
             )
