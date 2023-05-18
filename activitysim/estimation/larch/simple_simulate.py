@@ -230,6 +230,21 @@ def free_parking_model(
         },  # True is free parking, False is paid parking, names match spec positions
     )
 
+def work_from_home_model(
+    name="work_from_home",
+    edb_directory="output/estimation_data_bundle/{name}/",
+    return_data=False,
+):
+    return simple_simulate_model(
+        name=name,
+        edb_directory=edb_directory,
+        return_data=return_data,
+        choices={
+            True: 1,
+            False: 2,
+        },  # True is work from home, false is does not work from home, names match spec positions
+    )
+
 
 def mandatory_tour_frequency_model(
     name="mandatory_tour_frequency",
