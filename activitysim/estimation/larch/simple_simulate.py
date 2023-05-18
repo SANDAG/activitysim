@@ -310,3 +310,19 @@ def joint_tour_participation_model(
             1: 2,  # 1 means not participate, alternative 2
         },
     )
+
+def external_non_mandatory_identification_model(
+    name="external_non_mandatory_identification",
+    edb_directory="output/estimation_data_bundle/{name}/",
+    return_data=False,
+):
+    return simple_simulate_model(
+        name=name,
+        edb_directory=edb_directory,
+        return_data=return_data,
+        values_index_col="tour_id",
+        choices={
+            0: 1,  # 0 means external, alternative 1
+            1: 2,  # 1 means not external, alternative 2
+        },
+    )
