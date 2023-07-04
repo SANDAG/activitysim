@@ -326,3 +326,36 @@ def external_non_mandatory_identification_model(
             1: 2,  # 1 means not external, alternative 2
         },
     )
+
+
+def transit_pass_subsidy_model(
+    name="transit_pass_subsidy",
+    edb_directory="output/estimation_data_bundle/{name}/",
+    return_data=False,
+):
+    print("transit pass subsidy")
+    return simple_simulate_model(
+        name=name,
+        edb_directory=edb_directory,
+        return_data=return_data,
+        choices={
+            0: 1, # 0 means no subsidy, alternative 1
+            1: 2, # 1 means subsidy, alternative 2
+        },
+    )
+
+
+def transit_pass_ownership_model(
+    name="transit_pass_ownership",
+    edb_directory="output/estimation_data_bundle/{name}/",
+    return_data=False,
+):
+    return simple_simulate_model(
+        name=name,
+        edb_directory=edb_directory,
+        return_data=return_data,
+        choices={
+            0: 1, # 0 means no pass, alternative 1
+            1: 2, # 1 means pass, alternative 2
+        },
+    )
