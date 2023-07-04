@@ -359,3 +359,18 @@ def transit_pass_ownership_model(
             1: 2, # 1 means pass, alternative 2
         },
     )
+
+def transponder_ownership_model(
+    name="transponder_ownership",
+    edb_directory="output/estimation_data_bundle/{name}/",
+    return_data=False,
+):
+    return simple_simulate_model(
+        name=name,
+        edb_directory=edb_directory,
+        return_data=return_data,
+        choices={
+            0: 1, # 0 means no pass, alternative 1
+            1: 2, # 1 means pass, alternative 2
+        },
+    )
