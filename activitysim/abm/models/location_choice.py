@@ -17,6 +17,7 @@ from activitysim.core import (
 )
 from activitysim.core.interaction_sample import interaction_sample
 from activitysim.core.interaction_sample_simulate import interaction_sample_simulate
+from activitysim.core.util import reindex
 
 from .util import estimation
 from .util import logsums as logsum
@@ -138,15 +139,8 @@ def _location_sample(
     logger.info("Running %s with %d persons" % (trace_label, len(choosers.index)))
 
     sample_size = model_settings["SAMPLE_SIZE"]
-    if config.setting("disable_destination_sampling", False) or (
-        estimator and estimator.want_unsampled_alternatives
-    ):
-        # FIXME interaction_sample will return unsampled complete alternatives with probs and pick_count
-        logger.info(
-            "Estimation mode for %s using unsampled alternatives short_circuit_choices"
-            % (trace_label,)
-        )
-        sample_size = 0
+    if estimator:
+        sample_size = model_settings.get('ESTIMATION_SAMPLE_SIZE', 0)
 
     locals_d = {
         "skims": skims,
@@ -154,6 +148,8 @@ def _location_sample(
         "orig_col_name": skims.orig_key,  # added for sharrow flows
         "dest_col_name": skims.dest_key,  # added for sharrow flows
         "timeframe": "timeless",
+        "reindex": reindex,
+        "land_use": inject.get_table("land_use").to_frame(),
     }
     constants = config.get_model_constants(model_settings)
     locals_d.update(constants)
@@ -470,6 +466,29 @@ def run_location_sample(
             trace_label=trace_label,
         )
 
+    # FIXME temporary code to ensure sampled alternative is in choices for estimation
+    # Hack to get shorter run times when you don't care about creating EDB for location choice models
+    if estimator:
+        # grabbing survey values
+        survey_persons = estimation.manager.get_survey_table("persons")
+        if 'school_location' in trace_label:
+            survey_choices = survey_persons['school_zone_id'].reset_index()
+        elif ('workplace_location' in trace_label) and ('external' not in trace_label):
+            survey_choices = survey_persons['workplace_zone_id'].reset_index()
+        else:
+            return choices
+        survey_choices.columns = ['person_id', 'alt_dest']
+        survey_choices = survey_choices[survey_choices['person_id'].isin(choices.index) & (survey_choices.alt_dest > 0)]
+        # merging survey destination into table if not available
+        joined_data = survey_choices.merge(choices, on=['person_id', 'alt_dest'], how='left', indicator=True)
+        missing_rows = joined_data[joined_data['_merge'] == 'left_only']
+        missing_rows['pick_count'] = 1
+        if len(missing_rows) > 0:
+            new_choices = missing_rows[['person_id', 'alt_dest', 'prob', 'pick_count']].set_index('person_id')
+            choices = choices.append(new_choices, ignore_index=False).sort_index()
+            # making probability the mean of all other sampled destinations by person
+            choices['prob'] = choices['prob'].fillna(choices.groupby('person_id')['prob'].transform('mean'))
+
     return choices
 
 
@@ -601,6 +620,8 @@ def run_location_simulate(
         "orig_col_name": skims.orig_key,  # added for sharrow flows
         "dest_col_name": skims.dest_key,  # added for sharrow flows
         "timeframe": "timeless",
+        "reindex": reindex,
+        "land_use": inject.get_table("land_use").to_frame(),
     }
     constants = config.get_model_constants(model_settings)
     if constants is not None:
