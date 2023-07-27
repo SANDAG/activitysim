@@ -330,12 +330,14 @@ def workplace_location_model(**kwargs):
         **kwargs,
     )
 
+
 def external_workplace_location_model(**kwargs):
     unused = kwargs.pop("name", None)
     return location_choice_model(
         name="external_workplace_location",
         **kwargs,
     )
+
 
 def school_location_model(**kwargs):
     unused = kwargs.pop("name", None)

@@ -11,6 +11,7 @@ from .simple_simulate import *
 from .stop_frequency import *
 from .external_worker_identification import *
 
+
 def component_model(name, *args, **kwargs):
     if isinstance(name, str):
         m = globals().get(f"{name}_model")

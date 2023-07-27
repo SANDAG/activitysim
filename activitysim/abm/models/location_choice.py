@@ -140,7 +140,7 @@ def _location_sample(
 
     sample_size = model_settings["SAMPLE_SIZE"]
     if estimator:
-        sample_size = model_settings.get('ESTIMATION_SAMPLE_SIZE', 0)
+        sample_size = model_settings.get("ESTIMATION_SAMPLE_SIZE", 0)
 
     locals_d = {
         "skims": skims,
@@ -471,23 +471,32 @@ def run_location_sample(
     if estimator:
         # grabbing survey values
         survey_persons = estimation.manager.get_survey_table("persons")
-        if 'school_location' in trace_label:
-            survey_choices = survey_persons['school_zone_id'].reset_index()
-        elif ('workplace_location' in trace_label) and ('external' not in trace_label):
-            survey_choices = survey_persons['workplace_zone_id'].reset_index()
+        if "school_location" in trace_label:
+            survey_choices = survey_persons["school_zone_id"].reset_index()
+        elif ("workplace_location" in trace_label) and ("external" not in trace_label):
+            survey_choices = survey_persons["workplace_zone_id"].reset_index()
         else:
             return choices
-        survey_choices.columns = ['person_id', 'alt_dest']
-        survey_choices = survey_choices[survey_choices['person_id'].isin(choices.index) & (survey_choices.alt_dest > 0)]
+        survey_choices.columns = ["person_id", "alt_dest"]
+        survey_choices = survey_choices[
+            survey_choices["person_id"].isin(choices.index)
+            & (survey_choices.alt_dest > 0)
+        ]
         # merging survey destination into table if not available
-        joined_data = survey_choices.merge(choices, on=['person_id', 'alt_dest'], how='left', indicator=True)
-        missing_rows = joined_data[joined_data['_merge'] == 'left_only']
-        missing_rows['pick_count'] = 1
+        joined_data = survey_choices.merge(
+            choices, on=["person_id", "alt_dest"], how="left", indicator=True
+        )
+        missing_rows = joined_data[joined_data["_merge"] == "left_only"]
+        missing_rows["pick_count"] = 1
         if len(missing_rows) > 0:
-            new_choices = missing_rows[['person_id', 'alt_dest', 'prob', 'pick_count']].set_index('person_id')
+            new_choices = missing_rows[
+                ["person_id", "alt_dest", "prob", "pick_count"]
+            ].set_index("person_id")
             choices = choices.append(new_choices, ignore_index=False).sort_index()
             # making probability the mean of all other sampled destinations by person
-            choices['prob'] = choices['prob'].fillna(choices.groupby('person_id')['prob'].transform('mean'))
+            choices["prob"] = choices["prob"].fillna(
+                choices.groupby("person_id")["prob"].transform("mean")
+            )
 
     return choices
 

@@ -230,6 +230,7 @@ def free_parking_model(
         },  # True is free parking, False is paid parking, names match spec positions
     )
 
+
 def work_from_home_model(
     name="work_from_home",
     edb_directory="output/estimation_data_bundle/{name}/",
@@ -311,6 +312,7 @@ def joint_tour_participation_model(
         },
     )
 
+
 def external_non_mandatory_identification_model(
     name="external_non_mandatory_identification",
     edb_directory="output/estimation_data_bundle/{name}/",
@@ -339,8 +341,8 @@ def transit_pass_subsidy_model(
         edb_directory=edb_directory,
         return_data=return_data,
         choices={
-            0: 1, # 0 means no subsidy, alternative 1
-            1: 2, # 1 means subsidy, alternative 2
+            0: 1,  # 0 means no subsidy, alternative 1
+            1: 2,  # 1 means subsidy, alternative 2
         },
     )
 
@@ -355,10 +357,11 @@ def transit_pass_ownership_model(
         edb_directory=edb_directory,
         return_data=return_data,
         choices={
-            0: 1, # 0 means no pass, alternative 1
-            1: 2, # 1 means pass, alternative 2
+            0: 1,  # 0 means no pass, alternative 1
+            1: 2,  # 1 means pass, alternative 2
         },
     )
+
 
 def transponder_ownership_model(
     name="transponder_ownership",
@@ -370,7 +373,7 @@ def transponder_ownership_model(
         edb_directory=edb_directory,
         return_data=return_data,
         choices={
-            0: 1, # 0 means no pass, alternative 1
-            1: 2, # 1 means pass, alternative 2
+            0: 1,  # 0 means no pass, alternative 1
+            1: 2,  # 1 means pass, alternative 2
         },
     )
