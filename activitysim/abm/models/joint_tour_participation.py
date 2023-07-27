@@ -132,8 +132,12 @@ def participants_chooser(probs, choosers, spec, trace_label):
     and then check to see if the tour statisfies this requirement, and rechoose for any that
     fail until all are satisfied.
 
-    In principal, this shold always occur eventually, but we fail after MAX_ITERATIONS,
-    just in case there is some failure in program logic (haven't seen this occur.)
+    In principal, this shold always occur eventually, but we fail after MAX_ITERATIONS.
+    Failure can happen due to sampling on really small probabilities of participation for
+    household members.  There is an optional setting to force participation of all household
+    members with non-zero probability after MAX_ITERATIONS. Even with this forced participation,
+    tours can still be unsatisfied due to logical consistencies in upstream models or bad input
+    data in estimation mode.  If forced participation does not work, the run will crash.
 
     The return values are the same as logit.make_choices
 
@@ -209,6 +213,13 @@ def participants_chooser(probs, choosers, spec, trace_label):
                 probs[choice_col] = np.where(probs[choice_col] > 0, 1, 0)
                 non_choice_col = [col for col in probs.columns if col != choice_col][0]
                 probs[non_choice_col] = 1 - probs[choice_col]
+                if iter > MAX_ITERATIONS + 1:
+                    raise RuntimeError(
+                        f"{num_tours_remaining} tours could not be satisfied even with forcing participation."
+                        " This is likely due to some inconsistency between the tour frequency & composition model"
+                        " and the joint tour participation model, e.g. overlapping time windows with mandatory tours."
+                        " It could also be inconsistencies in the data if run in estimation mode."
+                    )
             else:
                 raise RuntimeError(
                     f"{num_tours_remaining} tours could not be satisfied after {iter} iterations"
