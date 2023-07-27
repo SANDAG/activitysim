@@ -132,8 +132,12 @@ def participants_chooser(probs, choosers, spec, trace_label):
     and then check to see if the tour statisfies this requirement, and rechoose for any that
     fail until all are satisfied.
 
-    In principal, this shold always occur eventually, but we fail after MAX_ITERATIONS,
-    just in case there is some failure in program logic (haven't seen this occur.)
+    In principal, this shold always occur eventually, but we fail after MAX_ITERATIONS.
+    Failure can happen due to sampling on really small probabilities of participation for
+    household members.  There is an optional setting to force participation of all household
+    members with non-zero probability after MAX_ITERATIONS. Even with this forced participation,
+    tours can still be unsatisfied due to logical consistencies in upstream models or bad input
+    data in estimation mode.  If forced participation does not work, the run will crash.
 
     The return values are the same as logit.make_choices
 
