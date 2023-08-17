@@ -380,6 +380,12 @@ def non_mandatory_tour_destination_model(**kwargs):
         **kwargs,
     )
 
+def external_non_mandatory_destination_model(**kwargs):
+    unused = kwargs.pop("name", None)
+    return location_choice_model(
+        name="external_non_mandatory_destination",
+        **kwargs,
+    )
 
 def trip_destination_model(**kwargs):
     unused = kwargs.pop("name", None)
