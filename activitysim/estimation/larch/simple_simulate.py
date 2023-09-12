@@ -377,3 +377,21 @@ def transponder_ownership_model(
             1: 2,  # 1 means pass, alternative 2
         },
     )
+    
+def telecommute_frequency_model(
+    name="telecommute_frequency",
+    edb_directory="output/estimation_data_bundle/{name}/",
+    return_data=False,
+):
+    return simple_simulate_model(
+        name=name,
+        edb_directory=edb_directory,
+        return_data=return_data,
+        choices={
+            "No_Telecommute" : 1,	
+            "1_day_week" : 2,	
+            "2_3_days_week" : 3,	
+            "4_days_week" : 4,
+        },
+    )
+
