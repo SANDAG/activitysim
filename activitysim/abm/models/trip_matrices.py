@@ -52,11 +52,23 @@ def write_trip_matrices(network_los):
         parking_settings = config.read_model_settings("parking_location_choice.yaml")
         parking_taz_col_name = parking_settings["ALT_DEST_COL_NAME"]
         if parking_taz_col_name in trips_df:
-            # TODO make parking zone negative, not zero, if not used
+            
+            trips_df["true_origin"] = trips_df["origin"]
+            trips_df["true_destination"] = trips_df["destination"]
+            
+            # Get origin parking zone if vehicle not parked at origin
+            trips_df["origin_parking_zone"] = np.where(
+                trips_df["tour_id"] == trips_df["tour_id"].shift(1),
+                trips_df[parking_taz_col_name].shift(1),
+                -1
+            )
+            
             trips_df.loc[trips_df[parking_taz_col_name] > 0, "destination"] = trips_df[
                 parking_taz_col_name
             ]
-        # Also need address the return trip
+            trips_df.loc[trips_df["origin_parking_zone"] > 0, "origin"] = trips_df[
+                "origin_parking_zone"
+            ]
 
     # write matrices by zone system type
     if network_los.zone_system == los.ONE_ZONE:  # taz trips written to taz matrices
@@ -213,6 +225,12 @@ def write_trip_matrices(network_los):
         write_matrices(
             aggregate_trips, zone_index, orig_index, dest_index, model_settings, True
         )
+        
+    if "parking_location" in config.setting("models"):
+        # Set trip origin and destination to be the actual location the person is and not where their vehicle is parked
+        trips_df["origin"] = trips_df["true_origin"]
+        trips_df["destination"] = trips_df["true_destination"]
+        del trips_df["true_origin"], trips_df["true_destination"]
 
 
 def annotate_trips(trips, network_los, model_settings):
