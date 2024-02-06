@@ -233,6 +233,7 @@ def construct_model_alternatives(model_settings, alts_cats_dict, vehicle_type_da
                     alts_wide.set_index(["body_type", "age", "fuel_type"]).index
                 )
             ].reset_index()
+            alts_long.index = alts_wide.index
         alts_wide.drop(columns="_merge", inplace=True)
 
     # converting age to integer to allow interactions in utilities
@@ -427,14 +428,12 @@ def iterate_vehicle_type_choice(
         choices.rename(columns={"choice": "vehicle_type"}, inplace=True)
 
         if alts_cats_dict:
-            alts = (
-                alts_long[alts_long.columns]
-                .apply(lambda row: "_".join(row.values.astype(str)), axis=1)
-                .values
-            )
+            alts = alts_long[alts_long.columns].apply(
+                lambda row: "_".join(row.values.astype(str)), axis=1
+            ).to_dict()
         else:
-            alts = model_spec.columns
-        choices["vehicle_type"] = choices["vehicle_type"].map(dict(enumerate(alts)))
+            alts = enumerate(dict(model_spec.columns))
+        choices["vehicle_type"] = choices["vehicle_type"].map(alts)
 
         # STEP II: append probabilistic vehicle type attributes
         if probs_spec_file is not None:
