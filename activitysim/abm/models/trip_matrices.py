@@ -51,15 +51,8 @@ def write_trip_matrices(network_los):
     if "parking_location" in config.setting("models"):
         parking_settings = config.read_model_settings("parking_location_choice.yaml")
         parking_taz_col_name = parking_settings["ALT_DEST_COL_NAME"]
-        auto_nest_name = parking_settings["AUTO_MODE_NEST"]
-
-        # Read trip mode choice settings to get auto modes
-        trip_mode_choice_settings = config.read_model_settings("trip_mode_choice.yaml")
-        trip_mode_choice_nest = config.get_logit_mocel_settings(trip_mode_choice_settings)
-        for alternative in trip_mode_choice_nest["alternatives"]:
-            if alternative["name"] == auto_nest_name:
-                auto_modes = alternative["alternatives"]
-                break
+        assert "AUTO_MODES" in parking_settings, "AUTO_MODES must be specified in parking location settings to properly adjust trip tables for assignment"
+        auto_modes = parking_settings["AUTO_MODES"]
 
         if parking_taz_col_name in trips_df:
             
