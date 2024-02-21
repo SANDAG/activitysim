@@ -51,6 +51,16 @@ def write_trip_matrices(network_los):
     if "parking_location" in config.setting("models"):
         parking_settings = config.read_model_settings("parking_location_choice.yaml")
         parking_taz_col_name = parking_settings["ALT_DEST_COL_NAME"]
+        auto_nest_name = parking_settings["AUTO_MODE_NEST"]
+
+        # Read trip mode choice settings to get auto modes
+        trip_mode_choice_settings = config.read_model_settings("trip_mode_choice.yaml")
+        trip_mode_choice_nest = config.get_logit_mocel_settings(trip_mode_choice_settings)
+        for alternative in trip_mode_choice_nest["alternatives"]:
+            if alternative["name"] == auto_nest_name:
+                auto_modes = alternative["alternatives"]
+                break
+
         if parking_taz_col_name in trips_df:
             
             trips_df["true_origin"] = trips_df["origin"]
@@ -59,7 +69,11 @@ def write_trip_matrices(network_los):
             # Get origin parking zone if vehicle not parked at origin
             trips_df["origin_parking_zone"] = np.where(
                 trips_df["tour_id"] == trips_df["tour_id"].shift(1),
-                trips_df[parking_taz_col_name].shift(1),
+                np.where(
+                    trip_df["trip_mode"].apply(lambda x: x in auto_modes),
+                    trips_df[parking_taz_col_name].shift(1),
+                    -1
+                    )   
                 -1
             )
             
