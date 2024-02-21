@@ -246,6 +246,13 @@ def write_trip_matrices(network_los):
         trips_df["destination"] = trips_df["true_destination"]
         del trips_df["true_origin"], trips_df["true_destination"]
 
+        trips_df["otaz"] = (
+            pipeline.get_table("land_use").reindex(trips_df["origin"]).TAZ.tolist()
+        )
+        trips_df["dtaz"] = (
+            pipeline.get_table("land_use").reindex(trips_df["destination"]).TAZ.tolist()
+        )
+
 
 def annotate_trips(trips, network_los, model_settings):
     """
