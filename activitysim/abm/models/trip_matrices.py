@@ -51,6 +51,9 @@ def write_trip_matrices(network_los):
     if "parking_location" in config.setting("models"):
         parking_settings = config.read_model_settings("parking_location_choice.yaml")
         parking_taz_col_name = parking_settings["ALT_DEST_COL_NAME"]
+        assert "AUTO_MODES" in parking_settings, "AUTO_MODES must be specified in parking location settings to properly adjust trip tables for assignment"
+        auto_modes = parking_settings["AUTO_MODES"]
+
         if parking_taz_col_name in trips_df:
             
             trips_df["true_origin"] = trips_df["origin"]
@@ -59,7 +62,11 @@ def write_trip_matrices(network_los):
             # Get origin parking zone if vehicle not parked at origin
             trips_df["origin_parking_zone"] = np.where(
                 trips_df["tour_id"] == trips_df["tour_id"].shift(1),
-                trips_df[parking_taz_col_name].shift(1),
+                np.where(
+                    trip_df["trip_mode"].apply(lambda x: x in auto_modes),
+                    trips_df[parking_taz_col_name].shift(1),
+                    -1
+                    )   
                 -1
             )
             
@@ -231,6 +238,14 @@ def write_trip_matrices(network_los):
         trips_df["origin"] = trips_df["true_origin"]
         trips_df["destination"] = trips_df["true_destination"]
         del trips_df["true_origin"], trips_df["true_destination"]
+
+        if network_los.zone_system == los.TWO_ZONE or network_los.zone_system == los.THREE_ZONE:
+            trips_df["otaz"] = (
+                pipeline.get_table("land_use").reindex(trips_df["origin"]).TAZ.tolist()
+            )
+            trips_df["dtaz"] = (
+                pipeline.get_table("land_use").reindex(trips_df["destination"]).TAZ.tolist()
+            )
 
 
 def annotate_trips(trips, network_los, model_settings):
