@@ -63,10 +63,10 @@ def write_trip_matrices(network_los):
             trips_df["origin_parking_zone"] = np.where(
                 trips_df["tour_id"] == trips_df["tour_id"].shift(1),
                 np.where(
-                    trip_df["trip_mode"].apply(lambda x: x in auto_modes),
+                    trips_df["trip_mode"].apply(lambda x: x in auto_modes),
                     trips_df[parking_taz_col_name].shift(1),
                     -1
-                    )   
+                    ),   
                 -1
             )
             
