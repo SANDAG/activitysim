@@ -401,6 +401,9 @@ def merge_school_escort_trips_into_pipeline():
 
     # checking to see if there are school escort trips to merge in
     if len(school_escort_trips) == 0:
+        # if no trips, fill escorting columns with NA
+        trips[["escort_participants", "school_escort_direction", "school_escort_trip_id",]] = pd.NA
+        pipeline.replace_table("trips", trips)
         return trips
 
     # want to remove stops if school escorting takes place on that half tour so we can replace them with the actual stops
