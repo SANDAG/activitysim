@@ -348,7 +348,7 @@ def iterate_vehicle_type_choice(
         )
 
     # alts preprocessor
-    alts_preprocessor_settings = model_settings.alts_preprocessor
+    alts_preprocessor_settings = model_settings.get("alts_preprocessor", None)
     if alts_preprocessor_settings:
         expressions.assign_columns(
             df=alts_wide,
