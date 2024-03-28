@@ -393,9 +393,9 @@ def iterate_vehicle_type_choice(
 
         # filter columns of alts and choosers
         if len(model_settings.COLS_TO_INCLUDE_IN_CHOOSER_TABLE) > 0:
-            choosers = choosers[model_settings.COLS_TO_INCLUDE_IN_CHOOSER_TABLE]
+            choosers = choosers[model_settings.get("COLS_TO_INCLUDE_IN_CHOOSER_TABLE")]
         if len(model_settings.COLS_TO_INCLUDE_IN_ALTS_TABLE) > 0:
-            alts_wide = alts_wide[model_settings.COLS_TO_INCLUDE_IN_ALTS_TABLE]
+            alts_wide = alts_wide[model_settings.get("COLS_TO_INCLUDE_IN_ALTS_TABLE")]
 
         # if there were so many alts that they had to be created programmatically,
         # by combining categorical variables, then the utility expressions should make
