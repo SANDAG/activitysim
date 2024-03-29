@@ -347,6 +347,16 @@ def iterate_vehicle_type_choice(
             model_settings, alts_cats_dict, vehicle_type_data
         )
 
+    # alts preprocessor
+    alts_preprocessor_settings = model_settings.get("alts_preprocessor", None)
+    if alts_preprocessor_settings:
+        expressions.assign_columns(
+            df=alts_wide,
+            model_settings=alts_preprocessor_settings,
+            locals_dict=locals_dict,
+            trace_label=trace_label,
+        )
+
     # - preparing choosers for iterating
     vehicles_merged = vehicles_merged.to_frame()
     vehicles_merged["already_owned_veh"] = ""
@@ -379,6 +389,12 @@ def iterate_vehicle_type_choice(
             veh_num,
             len(choosers),
         )
+
+        # filter columns of alts and choosers
+        if len(model_settings.get("COLS_TO_INCLUDE_IN_CHOOSER_TABLE", [])) > 0:
+            choosers = choosers[model_settings.get("COLS_TO_INCLUDE_IN_CHOOSER_TABLE", [])]
+        if len(model_settings.get("COLS_TO_INCLUDE_IN_ALTS_TABLE", [])) > 0:
+            alts_wide = alts_wide[model_settings.get("COLS_TO_INCLUDE_IN_ALTS_TABLE", [])]
 
         # if there were so many alts that they had to be created programmatically,
         # by combining categorical variables, then the utility expressions should make
