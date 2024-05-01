@@ -221,7 +221,19 @@ def construct_model_alternatives(model_settings, alts_cats_dict, vehicle_type_da
             ), f"missing vehicle data for alternatives:\n {missing_alts}"
         else:
             # eliminate alternatives if no vehicle type data
+            num_alts_before_filer = len(alts_wide)
             alts_wide = alts_wide[alts_wide._merge != "left_only"]
+            logger.warning(
+                f"Removed {num_alts_before_filer - len(alts_wide)} alternatives not included in input vehicle type data."
+            )
+            # need to also remove any alts from alts_long
+            alts_long.set_index(["body_type", "age", "fuel_type"], inplace=True)
+            alts_long = alts_long[
+                alts_long.index.isin(
+                    alts_wide.set_index(["body_type", "age", "fuel_type"]).index
+                )
+            ].reset_index()
+            alts_long.index = alts_wide.index
         alts_wide.drop(columns="_merge", inplace=True)
 
     # converting age to integer to allow interactions in utilities
@@ -335,6 +347,16 @@ def iterate_vehicle_type_choice(
             model_settings, alts_cats_dict, vehicle_type_data
         )
 
+    # alts preprocessor
+    alts_preprocessor_settings = model_settings.get("alts_preprocessor", None)
+    if alts_preprocessor_settings:
+        expressions.assign_columns(
+            df=alts_wide,
+            model_settings=alts_preprocessor_settings,
+            locals_dict=locals_dict,
+            trace_label=trace_label,
+        )
+
     # - preparing choosers for iterating
     vehicles_merged = vehicles_merged.to_frame()
     vehicles_merged["already_owned_veh"] = ""
@@ -367,6 +389,12 @@ def iterate_vehicle_type_choice(
             veh_num,
             len(choosers),
         )
+
+        # filter columns of alts and choosers
+        if len(model_settings.get("COLS_TO_INCLUDE_IN_CHOOSER_TABLE", [])) > 0:
+            choosers = choosers[model_settings.get("COLS_TO_INCLUDE_IN_CHOOSER_TABLE", [])]
+        if len(model_settings.get("COLS_TO_INCLUDE_IN_ALTS_TABLE", [])) > 0:
+            alts_wide = alts_wide[model_settings.get("COLS_TO_INCLUDE_IN_ALTS_TABLE", [])]
 
         # if there were so many alts that they had to be created programmatically,
         # by combining categorical variables, then the utility expressions should make
@@ -416,14 +444,12 @@ def iterate_vehicle_type_choice(
         choices.rename(columns={"choice": "vehicle_type"}, inplace=True)
 
         if alts_cats_dict:
-            alts = (
-                alts_long[alts_long.columns]
-                .apply(lambda row: "_".join(row.values.astype(str)), axis=1)
-                .values
-            )
+            alts = alts_long[alts_long.columns].apply(
+                lambda row: "_".join(row.values.astype(str)), axis=1
+            ).to_dict()
         else:
-            alts = model_spec.columns
-        choices["vehicle_type"] = choices["vehicle_type"].map(dict(enumerate(alts)))
+            alts = enumerate(dict(model_spec.columns))
+        choices["vehicle_type"] = choices["vehicle_type"].map(alts)
 
         # STEP II: append probabilistic vehicle type attributes
         if probs_spec_file is not None:

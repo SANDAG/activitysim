@@ -275,6 +275,10 @@ class ProtoPop:
                     maz_candidates = maz_candidates[
                         ~maz_candidates.MAZ.isin(maz_sample_idx)
                     ]
+
+                    # Need to make sure we sample from TAZs that still exist in the maz_candidates
+                    taz_candidates = taz_candidates[taz_candidates.index.isin(maz_candidates.TAZ)]
+
                     # Calculate the remaining samples to collect
                     n_samples_remaining = n_samples - len(maz_sample_idx)
                     n_samples_remaining = (
@@ -569,13 +573,12 @@ class ProtoPop:
         inject.add_table("proto_persons_merged", persons_merged)
 
 
-def get_disaggregate_logsums(network_los, chunk_size, trace_hh_id):
+def get_disaggregate_logsums(
+    network_los, chunk_size, trace_hh_id, disagg_model_settings
+):
     logsums = {}
     persons_merged = pipeline.get_table("proto_persons_merged").sort_index(
         inplace=False
-    )
-    disagg_model_settings = read_disaggregate_accessibility_yaml(
-        "disaggregate_accessibility.yaml"
     )
 
     for model_name in [
@@ -696,8 +699,14 @@ def compute_disaggregate_accessibility(network_los, chunk_size, trace_hh_id):
             tracing.register_traceable_table(tablename, df)
         del df
 
+    disagg_model_settings = read_disaggregate_accessibility_yaml(
+        "disaggregate_accessibility.yaml"
+    )
+
     # Run location choice
-    logsums = get_disaggregate_logsums(network_los, chunk_size, trace_hh_id)
+    logsums = get_disaggregate_logsums(
+        network_los, chunk_size, trace_hh_id, disagg_model_settings
+    )
     logsums = {k + "_accessibility": v for k, v in logsums.items()}
 
     # Combined accessibility table
@@ -736,20 +745,20 @@ def compute_disaggregate_accessibility(network_los, chunk_size, trace_hh_id):
     logsums["proto_disaggregate_accessibility"] = access_df
 
     # Drop any tables prematurely created
-    for tablename in [
-        "school_destination_size",
-        "workplace_destination_size",
-    ]:
-        pipeline.drop_table(tablename)
+    # FIXME: dropping size tables breaks restart functionality for location choice models.
+    #        hopefully this pipeline mess just goes away with move away from orca....
+    # for tablename in [
+    #     "school_destination_size",
+    #     "workplace_destination_size",
+    # ]:
+    #     pipeline.drop_table(tablename)
 
     for ch in list(pipeline.get_rn_generator().channels.keys()):
         pipeline.get_rn_generator().drop_channel(ch)
 
-    # Drop any prematurely added traceables
-    for trace in [
-        x for x in inject.get_injectable("traceable_tables") if "proto_" not in x
-    ]:
-        tracing.deregister_traceable_table(trace)
+    # Dropping all traceable tables
+    for table in inject.get_injectable("traceable_tables"):
+        tracing.deregister_traceable_table(table)
 
     # need to clear any premature tables that were added during the previous run
     orca._TABLES.clear()
@@ -759,5 +768,23 @@ def compute_disaggregate_accessibility(network_los, chunk_size, trace_hh_id):
 
     # Inject accessibility results into pipeline
     [inject.add_table(k, df) for k, df in logsums.items()]
+
+    # available post-processing
+    for annotations in disagg_model_settings.get("postprocess_proto_tables", []):
+        tablename = annotations["tablename"]
+        df = pipeline.get_table(tablename)
+        assert df is not None
+        assert annotations is not None
+        assign_columns(
+            df=df,
+            model_settings={
+                **annotations["annotate"],
+                **disagg_model_settings["suffixes"],
+            },
+            trace_label=tracing.extend_trace_label(
+                "disaggregate_accessibility.postprocess", tablename
+            ),
+        )
+        pipeline.replace_table(tablename, df)
 
     return

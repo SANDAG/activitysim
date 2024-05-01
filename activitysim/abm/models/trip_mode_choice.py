@@ -317,6 +317,11 @@ def trip_mode_choice(trips, network_los, chunk_size, trace_hh_id):
     pipeline.replace_table("trips", trips_df)
 
     if model_settings.get("annotate_trips"):
+        locals_dict = {}
+        locals_dict.update(constants)
+        simulate.set_skim_wrapper_targets(trips_merged, skims)
+        locals_dict.update(skims)
+        locals_dict["timeframe"] = "trip"
         annotate.annotate_trips(model_settings, trace_label, locals_dict)
 
     if trace_hh_id:

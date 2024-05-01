@@ -9,6 +9,7 @@ from .nonmand_tour_freq import *
 from .scheduling import *
 from .simple_simulate import *
 from .stop_frequency import *
+from .external_worker_identification import *
 
 
 def component_model(name, *args, **kwargs):
