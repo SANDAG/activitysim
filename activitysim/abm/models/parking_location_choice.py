@@ -16,7 +16,7 @@ from activitysim.core import (
 )
 from activitysim.core.interaction_sample_simulate import interaction_sample_simulate
 from activitysim.core.tracing import print_elapsed_time
-from activitysim.core.util import assign_in_place
+from activitysim.core.util import assign_in_place, drop_unused_chooser_columns
 
 from .util import estimation
 
@@ -99,6 +99,7 @@ def parking_destination_simulate(
     destination_sample,
     model_settings,
     skims,
+    locals_dict,
     chunk_size,
     trace_hh_id,
     trace_label,
@@ -122,11 +123,6 @@ def parking_destination_simulate(
     alt_dest_col_name = model_settings["ALT_DEST_COL_NAME"]
 
     logger.info("Running trip_destination_simulate with %d trips", len(trips))
-
-    locals_dict = config.get_model_constants(model_settings).copy()
-    locals_dict.update(skims)
-    locals_dict["timeframe"] = "trip"
-    locals_dict["PARKING"] = skims["op_skims"].dest_key
 
     parking_locations = interaction_sample_simulate(
         choosers=trips,
@@ -171,6 +167,19 @@ def choose_parking_location(
     t0 = print_elapsed_time()
 
     alt_dest_col_name = model_settings["ALT_DEST_COL_NAME"]
+
+    # remove trips and alts columns that are not used in spec
+    locals_dict = config.get_model_constants(model_settings).copy()
+    locals_dict.update(skims)
+    locals_dict["timeframe"] = "trip"
+    locals_dict["PARKING"] = skims["op_skims"].dest_key
+
+    spec = get_spec_for_segment(model_settings, "SPECIFICATION", segment_name)
+    trips = drop_unused_chooser_columns(trips, spec, locals_dict, custom_chooser=None)
+    alternatives = drop_unused_chooser_columns(
+        alternatives, spec, locals_dict, custom_chooser=None
+    )
+
     destination_sample = logit.interaction_dataset(
         trips, alternatives, alt_index_id=alt_dest_col_name
     )
@@ -184,6 +193,7 @@ def choose_parking_location(
         destination_sample=destination_sample,
         model_settings=model_settings,
         skims=skims,
+        locals_dict=locals_dict,
         chunk_size=chunk_size,
         trace_hh_id=trace_hh_id,
         trace_label=trace_label,
