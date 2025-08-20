@@ -66,8 +66,11 @@ def atwork_subtour_scheduling(
     # preprocessor
     constants = config.get_model_constants(model_settings)
     od_skim_wrapper = skim_dict.wrap("origin", "destination")
+    do_skim_wrapper = skim_dict.wrap("destination", "origin")
+
     skims = {
         "od_skims": od_skim_wrapper,
+        "do_skims": do_skim_wrapper,
     }
     expressions.annotate_preprocessors(
         state, subtours, constants, skims, model_settings, trace_label
